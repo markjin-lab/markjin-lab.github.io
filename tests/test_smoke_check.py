@@ -1528,10 +1528,10 @@ class PairKeyInfo(unittest.TestCase):
 
     ZH_ABOUT = ("<p>markjin 的定位是“统一系统观在 AI 辅助加持下的认知实践与自我进化”。</p>"
                 "<p>每日 06:30 开审，07:00 前发布（SGT）；改进提案每周一 10:00 审核。</p>"
-                "<p>联系：markjin@mail.grokbot.com</p>")
+                "<p>联系：contact@example.com</p>")
     EN_ABOUT = ("<p>markjin's positioning is cognitive practice and self-evolution of the Unified Systems View.</p>"
                 "<p>Daily review starts at 06:30 and posts publish before 07:00 (SGT); proposals every Monday at 10:00.</p>"
-                "<p>Contact: markjin@mail.grokbot.com</p>")
+                "<p>Contact: contact@example.com</p>")
 
     def run_pair(self, zh, en, name="about"):
         return sc.compare_pair(name, page(zh), page(en, "en"), self.CFG)
@@ -1603,7 +1603,7 @@ class PairKeyInfo(unittest.TestCase):
         self.assertTrue(sc.compare_pair("none", zh, en, self.CFG)["pair_profiles"]["ok"])
 
     def test_email_mismatch_fails(self):
-        r = self.run_pair(self.ZH_ABOUT, self.EN_ABOUT.replace("markjin@mail.grokbot.com", "old@example.com"))
+        r = self.run_pair(self.ZH_ABOUT, self.EN_ABOUT.replace("contact@example.com", "old@example.com"))
         self.assertFalse(r["pair_emails"]["ok"])
 
     def test_mailto_counts_as_email(self):
@@ -1685,7 +1685,7 @@ class R16AboutOneLiner(unittest.TestCase):
 
     def html(self, lang, text, sw):
         return ("<html lang=%s><body><span class=lang><a href='%s'>X</a></span><main><p>%s</p></main>"
-                "<footer>contact markjin@mail.grokbot.com</footer></body></html>" % (lang, sw, text))
+                "<footer>%s</footer></body></html>" % (lang, sw, text, sc.DISCLAIMER["zh" if lang.startswith("zh") else "en"]))
 
     def run_page(self, pages, lang, path):
         from unittest import mock
@@ -1740,3 +1740,37 @@ class R16AboutOneLiner(unittest.TestCase):
         for fn, line in (("about.md", self.ZH), ("about.en.md", self.EN)):
             body = open(os.path.join(root, "content", fn), encoding="utf-8").read().split("---", 2)[2].strip()
             self.assertEqual(body, line)
+
+
+class R17FooterDisclaimer(unittest.TestCase):
+    """Global footer carries the fixed disclaimer (2026-10-12 06:37); it must never count as the article's."""
+    def doc(self, lang, main):
+        return ("<html lang=%s><body><main><article>%s</article></main><footer>%s</footer></body></html>"
+                % (lang, main, sc.DISCLAIMER["zh" if lang.startswith("zh") else "en"]))
+
+    def test_footer_does_not_satisfy_disclaimer(self):
+        self.assertEqual(sc.last_body_paragraph(self.doc("zh-CN", "<p>正文一段。</p>")), "正文一段。")
+        self.assertEqual(sc.last_body_paragraph(self.doc("en", "<p>Body text.</p>")), "Body text.")
+
+    def test_article_disclaimer_still_found_with_footer(self):
+        for lang, k in (("zh-CN", "zh"), ("en", "en")):
+            h = self.doc(lang, "<p>x</p><p>%s</p>" % sc.DISCLAIMER[k])
+            self.assertEqual(sc.last_body_paragraph(h), sc.DISCLAIMER[k])
+
+    def test_footer_not_in_language_ratio(self):
+        body = "<p>这是一段中文正文，用来计算比例。</p>"
+        with_f = sc.body_language_ratio(self.doc("zh-CN", body), "zh")
+        no_f = sc.body_language_ratio("<html lang=zh-CN><body><main><article>%s</article></main></body></html>" % body, "zh")
+        self.assertEqual(with_f["letters"], no_f["letters"])
+        self.assertEqual(with_f["raw_letters"], no_f["raw_letters"])
+        en = sc.body_language_ratio(self.doc("en", "<p>English body only.</p>"), "en")
+        self.assertEqual(en["raw_letters"], len("Englishbodyonly"))
+
+    def test_i18n_footer_matches_fixed_disclaimer(self):
+        import os, re
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        for k in ("zh", "en"):
+            s = open(os.path.join(root, "i18n", k + ".toml"), encoding="utf-8").read()
+            self.assertEqual(re.search(r'^footer_disclaimer = "(.*)"$', s, re.M).group(1), sc.DISCLAIMER[k])
+            self.assertNotIn("footer_principle", s)
+            self.assertNotIn("@", s)
