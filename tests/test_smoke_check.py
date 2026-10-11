@@ -1348,8 +1348,10 @@ class R14PhraseConfig(unittest.TestCase):
             os.unlink(f.name)
 
     def base(self):
-        import json
-        return json.load(open(sc.PAIR_CONFIG, encoding="utf-8"))
+        import json, copy
+        c = json.load(open(sc.PAIR_CONFIG, encoding="utf-8"))
+        c["event_times"].setdefault("about", copy.deepcopy(R13PairRobustness.EV["event_times"]["about"]))
+        return c
 
     def bad(self, cfg, msg):
         with self.assertRaises(sc.PairConfigError) as cm:
@@ -1364,7 +1366,7 @@ class R14PhraseConfig(unittest.TestCase):
         c = self.base(); c["required_phrases"]["about"] = []; self.bad(c, "required_phrases['about']")
         c = self.base(); del c["required_phrases"]; self.bad(c, "required_phrases")
         c = self.base(); c["profile_hosts"] = []; self.bad(c, "profile_hosts")
-        c = self.base(); c["event_times"]["about"] = []; self.bad(c, "event_times['about']")
+        c = self.base(); c["event_times"]["about"] = []; self.bad(c, "event_times['about']")   # empty list still rejected
 
     def test_empty_variant_lists_rejected(self):
         c = self.base(); c["required_phrases"]["home"][0] = {"pairs": []}; self.bad(c, "pairs")
@@ -1427,8 +1429,12 @@ class R15Floors(unittest.TestCase):
         self.bad(c, "below the floor of 2")
 
     def test_event_floor(self):
+        # about no longer carries times (one-line page, 2026-10-12): no event floor; partial lists still load
+        self.assertEqual(sc.REQUIRED_EVENT_PAGES, ())
+        self.assertEqual(sc.REQUIRED_EVENTS, {})
         c = self.base(); c["event_times"]["about"] = [e for e in c["event_times"]["about"] if e["event"] != "publish"]
-        self.bad(c, "missing event(s) ['publish']")
+        self.load(c)
+        c = self.base(); c["event_times"] = {}; self.load(c)
 
     def test_profile_host_floor(self):
         c = self.base(); c["profile_hosts"] = ["x.com"]
@@ -1670,3 +1676,67 @@ class Disclaimer(SiteBase):
         d = os.path.join(os.path.dirname(__file__), "fixtures")
         self.assertEqual(sc.last_body_paragraph(open(os.path.join(d, "sample-daily.zh.html"), encoding="utf-8").read()), self.ZH)
         self.assertEqual(sc.last_body_paragraph(open(os.path.join(d, "sample-daily.en.html"), encoding="utf-8").read()), self.EN)
+
+
+class R16AboutOneLiner(unittest.TestCase):
+    """About page reduced to one positioning line (decision 2026-10-12 06:28 SGT)."""
+    ZH = "统一系统观在AI辅助加持下的认知实践与自我进化。"
+    EN = "Cognitive practice and self-evolution of the Unified Systems View, augmented by AI assistance."
+
+    def html(self, lang, text, sw):
+        return ("<html lang=%s><body><span class=lang><a href='%s'>X</a></span><main><p>%s</p></main>"
+                "<footer>contact markjin@mail.grokbot.com</footer></body></html>" % (lang, sw, text))
+
+    def run_page(self, pages, lang, path):
+        from unittest import mock
+        def fake(url, want_body=True, retries=2):
+            return pages.get(url, (404, None))
+        with mock.patch.object(sc, "fetch", fake):
+            return sc.check_page("https://s.test/", lang, path, {}, "about")
+
+    def pages(self):
+        return {"https://s.test/about/": (200, self.html("zh-CN", self.ZH, "/en/about/")),
+                "https://s.test/en/about/": (200, self.html("en", self.EN, "/about/"))}
+
+    def test_short_about_passes_both_langs(self):
+        for lang, path in (("zh", "/about/"), ("en", "/en/about/")):
+            r = self.run_page(self.pages(), lang, path)
+            self.assertTrue(r["checks"]["body_language"]["ok"], r["checks"]["body_language"])
+            self.assertIn("about page exemption", r["checks"]["body_language"]["detail"])
+            self.assertFalse(r.get("review"))
+            self.assertTrue(r["pass"], r["checks"])
+        self.assertNotIn("about", sc.MIN_LETTERS)
+
+    def test_about_keeps_lang_switch_and_html_lang(self):
+        p = self.pages()
+        p["https://s.test/about/"] = (200, self.html("en", self.ZH, "/en/wrong/"))
+        r = self.run_page(p, "zh", "/about/")
+        self.assertFalse(r["checks"]["html_lang"]["ok"])
+        self.assertFalse(r["checks"]["lang_switch"]["ok"])
+        self.assertFalse(r["pass"])
+
+    def test_about_keeps_link_check(self):
+        p = self.pages()
+        p["https://s.test/about/"] = (200, self.html("zh-CN", self.ZH + "<a href='/gone/'>g</a>", "/en/about/"))
+        r = self.run_page(p, "zh", "/about/")
+        self.assertFalse(r["pass"])
+
+    def test_about_empty_main_still_fails(self):
+        p = self.pages()
+        p["https://s.test/about/"] = (200, self.html("zh-CN", "", "/en/about/"))
+        r = self.run_page(p, "zh", "/about/")
+        self.assertFalse(r["checks"]["body_language"]["ok"])
+
+    def test_repo_pair_config_and_pair_check(self):
+        cfg = sc.load_pair_config()
+        self.assertNotIn("about", cfg["event_times"])
+        r = sc.compare_pair("about", self.html("zh-CN", self.ZH, "/en/about/"),
+                            self.html("en", self.EN, "/about/"), cfg)
+        self.assertTrue(all(v["ok"] for v in r.values()), r)
+
+    def test_repo_about_content_is_one_line(self):
+        import os
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        for fn, line in (("about.md", self.ZH), ("about.en.md", self.EN)):
+            body = open(os.path.join(root, "content", fn), encoding="utf-8").read().split("---", 2)[2].strip()
+            self.assertEqual(body, line)

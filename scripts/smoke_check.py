@@ -182,7 +182,7 @@ def css_urls(css):
 
 
 MAX_STRIP_FRAC = 0.60          # FAIL if stripping would remove more than this share of letters
-MIN_LETTERS = {"daily": 800, "about": 100}
+MIN_LETTERS = {"daily": 800}   # about: exempt like home (one-line page since 2026-10-12)
 
 
 def is_letter(c):
@@ -226,7 +226,7 @@ def body_language_ratio(html, lang):
 
 
 def judge_language(info, lang, page_type):
-    """Not applied to home pages (see check_page). Return (status, detail); status is 'ok', 'fail' or 'review'."""
+    """Not applied to home or about pages (see check_page). Return (status, detail); status is 'ok', 'fail' or 'review'."""
     need = ">=0.30" if lang == "zh" else "<=0.05"
     detail = "CJK ratio before stripping %.2f over %d letters; after %.2f over %d letters; stripped %.0f%% (need %s, strip cap %.0f%%, min %d letters for %s)" % (
         info["raw_ratio"], info["raw_letters"], info["ratio"], info["letters"],
@@ -951,6 +951,12 @@ def check_page(base, lang, path, link_cache, page_type="daily"):
         else:
             status = "fail"
             detail = "page_type=home rejected (%s); " % why + detail
+    elif page_type == "about" and info.get("main_count", 1) == 1 and info["letters"] > 0:
+        # one-line about page (2026-10-12): language ratio and letter minimum not checked, like home;
+        # load, html_lang, lang_switch and link checks above/below still apply
+        status = "ok"
+        detail = ("not checked: about page exemption (for information only: CJK ratio %.2f over %d letters)"
+                  % (info["raw_ratio"], info["raw_letters"]))
     res["language"] = info
     rec("body_language", status == "ok", detail)
     if status == "review":
@@ -1026,8 +1032,8 @@ class PairConfigError(Exception):
 # ---- floors fixed in code: a config below any floor is a CONFIG ERROR (FAIL) ----
 REQUIRED_PHRASE_PAGES = ("home", "about")
 MIN_PHRASES = {"home": 2, "about": 2}                   # minimum number of phrase items per page
-REQUIRED_EVENT_PAGES = ("about",)
-REQUIRED_EVENTS = {"about": ("review starts", "publish", "Monday proposal review")}
+REQUIRED_EVENT_PAGES = ()   # about no longer lists times (one-line page since 2026-10-12)
+REQUIRED_EVENTS = {}
 REQUIRED_PROFILE_HOSTS = ("x.com", "github.com")
 FLOOR_SITEMAPS = ("/sitemap.xml", "/zh/sitemap.xml", "/en/sitemap.xml")
 FLOOR_MIN_PAGES = {"daily": 1}
