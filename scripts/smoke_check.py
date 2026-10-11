@@ -182,7 +182,7 @@ def css_urls(css):
 
 
 MAX_STRIP_FRAC = 0.60          # FAIL if stripping would remove more than this share of letters
-MIN_LETTERS = {"daily": 800}   # about: exempt like home (one-line page since 2026-10-12)
+MIN_LETTERS = {"daily": 800}   # about has no minimum letter count; its language ratio is still checked
 
 
 def is_letter(c):

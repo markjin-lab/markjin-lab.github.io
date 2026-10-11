@@ -1796,7 +1796,7 @@ class R17FooterDisclaimer(unittest.TestCase):
         en = sc.body_language_ratio(self.doc("en", "<p>English body only.</p>"), "en")
         self.assertEqual(en["raw_letters"], len("Englishbodyonly"))
 
-    def test_i18n_footer_matches_fixed_disclaimer(self):
+    def test_i18n_footer_matches_site_disclaimer(self):
         import os, re
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         for k in ("zh", "en"):
