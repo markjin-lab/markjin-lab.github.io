@@ -226,7 +226,7 @@ def body_language_ratio(html, lang):
 
 
 def judge_language(info, lang, page_type):
-    """Not applied to home or about pages (see check_page). Return (status, detail); status is 'ok', 'fail' or 'review'."""
+    """Not applied to home pages (see check_page); about has no letter minimum (MIN_LETTERS). Return (status, detail); status is 'ok', 'fail' or 'review'."""
     need = ">=0.30" if lang == "zh" else "<=0.05"
     detail = "CJK ratio before stripping %.2f over %d letters; after %.2f over %d letters; stripped %.0f%% (need %s, strip cap %.0f%%, min %d letters for %s)" % (
         info["raw_ratio"], info["raw_letters"], info["ratio"], info["letters"],
@@ -951,12 +951,6 @@ def check_page(base, lang, path, link_cache, page_type="daily"):
         else:
             status = "fail"
             detail = "page_type=home rejected (%s); " % why + detail
-    elif page_type == "about" and info.get("main_count", 1) == 1 and info["letters"] > 0:
-        # one-line about page (2026-10-12): language ratio and letter minimum not checked, like home;
-        # load, html_lang, lang_switch and link checks above/below still apply
-        status = "ok"
-        detail = ("not checked: about page exemption (for information only: CJK ratio %.2f over %d letters)"
-                  % (info["raw_ratio"], info["raw_letters"]))
     res["language"] = info
     rec("body_language", status == "ok", detail)
     if status == "review":

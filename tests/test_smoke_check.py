@@ -1348,9 +1348,14 @@ class R14PhraseConfig(unittest.TestCase):
             os.unlink(f.name)
 
     def base(self):
-        import json, copy
-        c = json.load(open(sc.PAIR_CONFIG, encoding="utf-8"))
-        c["event_times"].setdefault("about", copy.deepcopy(R13PairRobustness.EV["event_times"]["about"]))
+        import json
+        return json.load(open(sc.PAIR_CONFIG, encoding="utf-8"))
+
+    def with_events(self):
+        """Production config plus a test-only event list (production has no event pages since 2026-10-12)."""
+        import copy
+        c = self.base()
+        c["event_times"]["about"] = copy.deepcopy(R13PairRobustness.EV["event_times"]["about"])
         return c
 
     def bad(self, cfg, msg):
@@ -1366,7 +1371,7 @@ class R14PhraseConfig(unittest.TestCase):
         c = self.base(); c["required_phrases"]["about"] = []; self.bad(c, "required_phrases['about']")
         c = self.base(); del c["required_phrases"]; self.bad(c, "required_phrases")
         c = self.base(); c["profile_hosts"] = []; self.bad(c, "profile_hosts")
-        c = self.base(); c["event_times"]["about"] = []; self.bad(c, "event_times['about']")   # empty list still rejected
+        c = self.with_events(); c["event_times"]["about"] = []; self.bad(c, "event_times['about']")   # empty list still rejected
 
     def test_empty_variant_lists_rejected(self):
         c = self.base(); c["required_phrases"]["home"][0] = {"pairs": []}; self.bad(c, "pairs")
@@ -1383,22 +1388,23 @@ class R14PhraseConfig(unittest.TestCase):
         self.assertFalse(sc.phrase_long_enough("abc 1234"))
 
     def test_event_pattern_validation(self):
-        c = self.base(); c["event_times"]["about"][0]["en"] = "review starts at"; self.bad(c, "{T}")
-        c = self.base(); c["event_times"]["about"][0]["zh"] = "{T}{T}"; self.bad(c, "{T}")
-        c = self.base(); c["event_times"]["about"][0]["zh"] = "({T}"; self.bad(c, "not a valid regex")
-        c = self.base(); c["event_times"]["about"][0]["event"] = ""; self.bad(c, "event")
+        c = self.with_events(); c["event_times"]["about"][0]["en"] = "review starts at"; self.bad(c, "{T}")
+        c = self.with_events(); c["event_times"]["about"][0]["zh"] = "{T}{T}"; self.bad(c, "{T}")
+        c = self.with_events(); c["event_times"]["about"][0]["zh"] = "({T}"; self.bad(c, "not a valid regex")
+        c = self.with_events(); c["event_times"]["about"][0]["event"] = ""; self.bad(c, "event")
 
 
 class R15Floors(unittest.TestCase):
     load = R14PhraseConfig.load
     base = R14PhraseConfig.base
+    with_events = R14PhraseConfig.with_events
     bad = R14PhraseConfig.bad
     def test_capture_group_patterns_rejected(self):
-        c = self.base(); c["event_times"]["about"][0]["en"] = "(review starts) at {T}"
+        c = self.with_events(); c["event_times"]["about"][0]["en"] = "(review starts) at {T}"
         self.bad(c, "capture groups besides {T}")
-        c = self.base(); c["event_times"]["about"][0]["zh"] = "(?P<x>每日) {T}\\s*开审"
+        c = self.with_events(); c["event_times"]["about"][0]["zh"] = "(?P<x>每日) {T}\\s*开审"
         self.bad(c, "capture groups besides {T}")
-        c = self.base(); c["event_times"]["about"][0]["en"] = "(?:review|Review) starts at {T}"
+        c = self.with_events(); c["event_times"]["about"][0]["en"] = "(?:review|Review) starts at {T}"
         self.load(c)    # non-capturing groups are fine
 
     def test_capture_group_pattern_does_not_crash_at_runtime(self):
@@ -1408,7 +1414,7 @@ class R15Floors(unittest.TestCase):
     def test_capture_group_config_reported_by_main(self):
         import io, contextlib, json, tempfile, os
         from unittest import mock
-        c = self.base(); c["event_times"]["about"][0]["en"] = "(review starts) at {T}"
+        c = self.with_events(); c["event_times"]["about"][0]["en"] = "(review starts) at {T}"
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
             json.dump(c, f)
         out = io.StringIO()
@@ -1429,12 +1435,15 @@ class R15Floors(unittest.TestCase):
         self.bad(c, "below the floor of 2")
 
     def test_event_floor(self):
-        # about no longer carries times (one-line page, 2026-10-12): no event floor; partial lists still load
+        # No page keeps an event floor since the about page dropped its schedule (2026-10-12):
+        # the production config has no about events and loads; an empty event_times is accepted.
         self.assertEqual(sc.REQUIRED_EVENT_PAGES, ())
         self.assertEqual(sc.REQUIRED_EVENTS, {})
-        c = self.base(); c["event_times"]["about"] = [e for e in c["event_times"]["about"] if e["event"] != "publish"]
-        self.load(c)
-        c = self.base(); c["event_times"] = {}; self.load(c)
+        c = self.base()
+        self.assertNotIn("about", c["event_times"])
+        self.assertEqual(self.load(c)["event_times"], {})
+        c["event_times"] = {}; self.load(c)
+        del c["event_times"]; self.bad(c, "event_times must be an object")
 
     def test_profile_host_floor(self):
         c = self.base(); c["profile_hosts"] = ["x.com"]
@@ -1685,7 +1694,7 @@ class R16AboutOneLiner(unittest.TestCase):
 
     def html(self, lang, text, sw):
         return ("<html lang=%s><body><span class=lang><a href='%s'>X</a></span><main><p>%s</p></main>"
-                "<footer>%s</footer></body></html>" % (lang, sw, text, sc.DISCLAIMER["zh" if lang.startswith("zh") else "en"]))
+                "<footer>%s</footer></body></html>" % (lang, sw, text, R17FooterDisclaimer.FOOTER["zh" if lang.startswith("zh") else "en"]))
 
     def run_page(self, pages, lang, path):
         from unittest import mock
@@ -1702,7 +1711,7 @@ class R16AboutOneLiner(unittest.TestCase):
         for lang, path in (("zh", "/about/"), ("en", "/en/about/")):
             r = self.run_page(self.pages(), lang, path)
             self.assertTrue(r["checks"]["body_language"]["ok"], r["checks"]["body_language"])
-            self.assertIn("about page exemption", r["checks"]["body_language"]["detail"])
+            self.assertNotIn("exemption", r["checks"]["body_language"]["detail"])
             self.assertFalse(r.get("review"))
             self.assertTrue(r["pass"], r["checks"])
         self.assertNotIn("about", sc.MIN_LETTERS)
@@ -1720,6 +1729,20 @@ class R16AboutOneLiner(unittest.TestCase):
         p["https://s.test/about/"] = (200, self.html("zh-CN", self.ZH + "<a href='/gone/'>g</a>", "/en/about/"))
         r = self.run_page(p, "zh", "/about/")
         self.assertFalse(r["pass"])
+
+    def test_en_about_with_chinese_fails_language(self):
+        p = self.pages()
+        p["https://s.test/en/about/"] = (200, self.html("en",
+            "统一系统观在AI辅助加持下的认知实践与自我进化。 Unified Systems View cognitive practice and self-evolution", "/about/"))
+        r = self.run_page(p, "en", "/en/about/")
+        self.assertFalse(r["checks"]["body_language"]["ok"], r["checks"]["body_language"])
+        self.assertFalse(r["pass"])
+
+    def test_zh_about_in_english_fails_language(self):
+        p = self.pages()
+        p["https://s.test/about/"] = (200, self.html("zh-CN", self.EN, "/en/about/"))
+        r = self.run_page(p, "zh", "/about/")
+        self.assertFalse(r["checks"]["body_language"]["ok"])
 
     def test_about_empty_main_still_fails(self):
         p = self.pages()
@@ -1743,10 +1766,17 @@ class R16AboutOneLiner(unittest.TestCase):
 
 
 class R17FooterDisclaimer(unittest.TestCase):
-    """Global footer carries the fixed disclaimer (2026-10-12 06:37); it must never count as the article's."""
+    """Global footer carries a site-wide disclaimer (2026-10-12 06:37, wording 06:45); it never counts as the article's."""
+    FOOTER = {"zh": "本站内容不构成投资建议。", "en": "Content on this site does not constitute investment advice."}
     def doc(self, lang, main):
         return ("<html lang=%s><body><main><article>%s</article></main><footer>%s</footer></body></html>"
-                % (lang, main, sc.DISCLAIMER["zh" if lang.startswith("zh") else "en"]))
+                % (lang, main, self.FOOTER["zh" if lang.startswith("zh") else "en"]))
+
+    def test_footer_never_satisfies_disclaimer(self):
+        for lang, k in (("zh-CN", "zh"), ("en", "en")):
+            h = ("<html lang=%s><body><main><article><p>x</p></article></main><footer><p>%s</p></footer></body></html>"
+                 % (lang, sc.DISCLAIMER[k]))
+            self.assertEqual(sc.last_body_paragraph(h), "x")
 
     def test_footer_does_not_satisfy_disclaimer(self):
         self.assertEqual(sc.last_body_paragraph(self.doc("zh-CN", "<p>正文一段。</p>")), "正文一段。")
@@ -1771,6 +1801,7 @@ class R17FooterDisclaimer(unittest.TestCase):
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         for k in ("zh", "en"):
             s = open(os.path.join(root, "i18n", k + ".toml"), encoding="utf-8").read()
-            self.assertEqual(re.search(r'^footer_disclaimer = "(.*)"$', s, re.M).group(1), sc.DISCLAIMER[k])
+            self.assertEqual(re.search(r'^footer_disclaimer = "(.*)"$', s, re.M).group(1), self.FOOTER[k])
+            self.assertNotEqual(self.FOOTER[k], sc.DISCLAIMER[k])
             self.assertNotIn("footer_principle", s)
             self.assertNotIn("@", s)
