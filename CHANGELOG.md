@@ -2,6 +2,7 @@
 
 ## 2026-10-12
 - 10-12 日报（QA #27、#34）：中英两版同步——更正提示移到导语之后；「统一系统观解读」节首加一句白话说明这一节是什么，并改写「暂不做框架判断」一句，说明为何只有第 3、4 条写「改变了什么」；Spaceflight Now 发射预告并入第 5 条作旁注、删去原 X1，原 X2 改为 X1；X 帖补发帖时间并注明文章网址提到 unique games；英文第 1 条三个括注拆到句后；英文小节标题改为 "Reading through the Unified Systems View"；节首说明「背景」「为什么重要」「改变了什么」三个标签的意思；各条「为什么重要」改为写具体影响；删去与正文矛盾的说法。审查 update5-r1：解读节节首改为统一系统观的一句白话说明（链接关于页）并写明第 1、2、5、6 条暂不做框架判断；英文小节标题改为 "Today’s news through the Unified Systems View"；各条「为什么重要」收回到来源所说范围；第 5 条删去 Spaceflight Now 旁注、改引 SpaceX 任务页，补一级说明，出处去掉原 [7][8] 并重新编号；导语加入第 5 条。关于页未改动。
+- 关于页定义（QA #35，经 Grok Bot 转达）：中文只把「再用同一套步骤」一句改为「它再用同一套步骤……」，补出主语；保留「分型」。英文按中文重译（Grok Bot 定，采用审查 about-def-r2 给出的两句）：不用 fractal 类比，写明结构跨级别反复出现、一个级别的变化会传导到其他级别，前后统一用 "language"。定位句不变；测试常量同步。
 - 关于页加统一系统观定义（王总 2026-10-12 08:20 决定、08:35 定稿，经 Grok Bot 转达）：定位句下加一段概括性定义，中文逐字照定稿；英文采用 update4-r2 审查给出的译文（统一系统观 = Unified Systems View）；定位句不变、不带句号；测试常量与 docs/smoke-check.md 同步。
 - 关于页：中英两版定位句句末句号去掉，与首页标语一致（审查意见，经 Grok Bot 转达）；测试常量同步。
 - 删除欢迎文（王总 2026-10-12 08:20，经 Grok Bot 转达）：删去 content/posts/daily/2026-10-10-welcome.md 与 .en.md；两个网址 /posts/daily/2026-10-10-welcome/、/en/posts/daily/2026-10-10-welcome/ 加入 smoke 的 retired_paths（及 retired_prefixes 与代码下限），上线后须返回 404；测试与 docs/i18n.md、docs/smoke-check.md 同步。
