@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## 2026-10-12
+- 关于页加统一系统观定义（王总 2026-10-12 08:20 决定、08:35 定稿，经 Grok Bot 转达）：定位句下加一段概括性定义，中文逐字照定稿；英文采用 update4-r2 审查给出的译文（统一系统观 = Unified Systems View）；定位句不变、不带句号；测试常量与 docs/smoke-check.md 同步。
 - 关于页：中英两版定位句句末句号去掉，与首页标语一致（审查意见，经 Grok Bot 转达）；测试常量同步。
 - 删除欢迎文（王总 2026-10-12 08:20，经 Grok Bot 转达）：删去 content/posts/daily/2026-10-10-welcome.md 与 .en.md；两个网址 /posts/daily/2026-10-10-welcome/、/en/posts/daily/2026-10-10-welcome/ 加入 smoke 的 retired_paths（及 retired_prefixes 与代码下限），上线后须返回 404；测试与 docs/i18n.md、docs/smoke-check.md 同步。
 - 路线图：更新重建后的编号引用。两个公开仓库重建后，旧仓库的 Issue、PR 与 commit 编号在新仓库中不存在，新仓库中也没有能明确对上的条目；路线图中指向旧仓库的引用统一写成“旧站点仓库（已归档，不公开）”或“旧 markjin-data 仓库（已归档，不公开）”，并去掉一处框架正文摘录。路线图版本号不变（仍为 v1.10），规则不变。
