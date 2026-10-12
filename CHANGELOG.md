@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## 2026-10-12
-- 关于页定义（QA #35，经 Grok Bot 转达）：中文只把「。再用同一套步骤」改为「，并用同一套步骤」，并入上一句，主语清楚；保留「分型」。英文按中文重译：用 "fractal-like structure that recurs across levels"，写明一个级别的变化会传导到其他级别，前后统一用 "language"。定位句不变；测试常量同步。
+- 关于页定义（QA #35，经 Grok Bot 转达）：中文只把「再用同一套步骤」一句改为「它再用同一套步骤……」，补出主语；保留「分型」。英文按中文重译（Grok Bot 定，采用审查 about-def-r2 给出的两句）：不用 fractal 类比，写明结构跨级别反复出现、一个级别的变化会传导到其他级别，前后统一用 "language"。定位句不变；测试常量同步。
 - 关于页加统一系统观定义（王总 2026-10-12 08:20 决定、08:35 定稿，经 Grok Bot 转达）：定位句下加一段概括性定义，中文逐字照定稿；英文采用 update4-r2 审查给出的译文（统一系统观 = Unified Systems View）；定位句不变、不带句号；测试常量与 docs/smoke-check.md 同步。
 - 关于页：中英两版定位句句末句号去掉，与首页标语一致（审查意见，经 Grok Bot 转达）；测试常量同步。
 - 删除欢迎文（王总 2026-10-12 08:20，经 Grok Bot 转达）：删去 content/posts/daily/2026-10-10-welcome.md 与 .en.md；两个网址 /posts/daily/2026-10-10-welcome/、/en/posts/daily/2026-10-10-welcome/ 加入 smoke 的 retired_paths（及 retired_prefixes 与代码下限），上线后须返回 404；测试与 docs/i18n.md、docs/smoke-check.md 同步。
