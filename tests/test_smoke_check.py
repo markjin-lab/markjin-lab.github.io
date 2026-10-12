@@ -1697,10 +1697,7 @@ class Disclaimer(SiteBase):
 
 
 class R16AboutOneLiner(unittest.TestCase):
-    """About page: positioning line (decision 2026-10-12 06:28 SGT), then one definition paragraph
-    (王总 2026-10-12 08:20 decision, wording final 08:35, via Grok Bot)."""
-    DEF_ZH = '统一系统观是一套跨领域通用的结构语言。它把经济、股市、人体乃至物理世界里的复杂系统，都看作同一种分型结构：这种结构在大小不同的级别上反复出现，一个级别的变化又会传导到其他级别。再用同一套步骤去观察和诊断这些系统。它统一的是看问题的语言，而不是各个领域的事实。'
-    DEF_EN = 'The Unified Systems View is a structural language shared across fields. It treats complex systems in the economy, the stock market, the human body and even the physical world as one and the same fractal structure: a structure that recurs at levels of different sizes, where a change at one level is transmitted to the other levels. It then uses the same set of steps to observe and diagnose these systems. What it unifies is the language for looking at problems, not the facts of each field.'
+    """About page reduced to one positioning line (decision 2026-10-12 06:28 SGT)."""
     ZH = "统一系统观在 AI 辅助加持下的认知实践与自我进化"
     EN = "Unified Systems View: cognitive practice and self-evolution with AI assistance"
 
@@ -1769,12 +1766,12 @@ class R16AboutOneLiner(unittest.TestCase):
                             self.html("en", self.EN, "/about/"), cfg)
         self.assertTrue(all(v["ok"] for v in r.values()), r)
 
-    def test_repo_about_content_is_line_plus_definition(self):
+    def test_repo_about_content_is_one_line(self):
         import os
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        for fn, line, dfn in (("about.md", self.ZH, self.DEF_ZH), ("about.en.md", self.EN, self.DEF_EN)):
+        for fn, line in (("about.md", self.ZH), ("about.en.md", self.EN)):
             body = open(os.path.join(root, "content", fn), encoding="utf-8").read().split("---", 2)[2].strip()
-            self.assertEqual(body, line + "\n\n" + dfn)
+            self.assertEqual(body, line)
 
 
 class R17FooterDisclaimer(unittest.TestCase):
