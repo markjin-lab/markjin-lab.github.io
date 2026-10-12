@@ -1028,7 +1028,7 @@ class PairConfigError(Exception):
 # ---- floors fixed in code: a config below any floor is a CONFIG ERROR (FAIL) ----
 REQUIRED_PHRASE_PAGES = ("home", "about")
 MIN_PHRASES = {"home": 2, "about": 2}                   # minimum number of phrase items per page
-REQUIRED_EVENT_PAGES = ()   # about no longer lists times (one-line page since 2026-10-12)
+REQUIRED_EVENT_PAGES = ()   # about lists no times (positioning line + one definition paragraph since 2026-10-12)
 REQUIRED_EVENTS = {}
 REQUIRED_PROFILE_HOSTS = ("x.com", "github.com")
 FLOOR_SITEMAPS = ("/sitemap.xml", "/zh/sitemap.xml", "/en/sitemap.xml")
