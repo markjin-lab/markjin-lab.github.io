@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Post-deploy smoke check for the markjin site (stdlib only).
 
-Usage: python3 scripts/smoke_check.py [--base URL] [--json-out FILE] [--pair-config scripts/smoke_pairs.json]
+Usage: python3 scripts/smoke_check.py [--base URL] [--public-dir public/] [--json-out FILE] [--pair-config scripts/smoke_pairs.json]
+--public-dir (alias --local): serve pages under --base from a local Hugo build instead of the network
+(pre-merge check of the new build); URLs outside the base are still fetched live.
 Exit code: 0 = all checks passed, 1 = at least one failure or page flagged REVIEW (sample too small).
 External links are reported but never fail the run.
 """
@@ -18,8 +20,32 @@ _cache = {}
 _final = {}   # requested URL -> final URL after redirects
 
 
+LOCAL = {"dir": None, "base": None}   # set by --public-dir
+
+
+def _local_file(url):
+    """Path in the local build for a URL under the base, '' if missing, None if not local mode / off-base."""
+    if not LOCAL["dir"]:
+        return None
+    u = urldefrag(url)[0].split("?")[0]
+    if not u.startswith(LOCAL["base"]):
+        return None
+    rel = u[len(LOCAL["base"]):]
+    f = os.path.join(LOCAL["dir"], *[x for x in rel.split("/") if x])
+    if os.path.isdir(f):
+        f = os.path.join(f, "index.html")
+    return f if os.path.isfile(f) else ""
+
+
 def fetch(url, want_body=True, retries=2):
     """Return (status, body_text). Status 0 = network error."""
+    lf = _local_file(url)
+    if lf is not None:
+        if not lf:
+            return (404, None)
+        _final[url] = url
+        with open(lf, encoding="utf-8", errors="replace") as fh:
+            return (200, fh.read() if want_body else None)
     if url in _cache and (not want_body or _cache[url][1] is not None):
         return _cache[url]
     last = (0, None)
@@ -57,6 +83,8 @@ def fetch_status_nofollow(url, retries=2):
     """HTTP status of `url` WITHOUT following redirects (a 301/302 is reported as such, never as the
     status of its target). Used for retired paths, which must answer 404 themselves."""
     if fetch is not _REAL_FETCH:          # test doubles of fetch() already report raw statuses
+        return fetch(url, want_body=False)[0]
+    if _local_file(url) is not None:      # local build: no server-side redirects exist
         return fetch(url, want_body=False)[0]
     st = 0
     for attempt in range(retries + 1):
@@ -912,7 +940,14 @@ def check_page(base, lang, path, link_cache, page_type="daily"):
             if vis_len else "HTTP 200 but no visible text in <main>")
     hl = (p.html_lang or "")
     rec("html_lang", hl.lower().split("-")[0] == lang, "lang=%r" % hl)
-    if page_type in DISCLAIMER_TYPES:
+    m = re.search(r"/posts/daily/(\d{4}-\d{2}-\d{2})/", "/" + path.lstrip("/"))
+    if page_type == "daily" and m and m.group(1) >= FOOTER_RULE_FROM:
+        ft = footer_text(body)
+        rec("disclaimer", FOOTER_DISCLAIMER[lang] in ft,
+            "site footer disclaimer present (daily %s, footer rule)" % m.group(1)
+            if FOOTER_DISCLAIMER[lang] in ft
+            else "daily %s: <footer> must contain %r, got %r" % (m.group(1), FOOTER_DISCLAIMER[lang], ft[:80]))
+    elif page_type in DISCLAIMER_TYPES:
         last = last_body_paragraph(body)
         rec("disclaimer", last == DISCLAIMER[lang],
             "last paragraph is the fixed disclaimer" if last == DISCLAIMER[lang]
@@ -1037,6 +1072,51 @@ FLOOR_DAILY_EFFECTIVE_EARLIEST = "2026-10-12T07:00"   # SGT; first publication -
 CAP_DAILY_EFFECTIVE_LATEST = "2026-10-19T07:00"       # SGT; nor can it be postponed past one week after that
 DISCLAIMER = {"zh": "本文不含投资建议。", "en": "This article does not constitute investment advice."}
 DISCLAIMER_TYPES = ("daily", "macro", "cards")
+# Dailies dated FOOTER_RULE_FROM or later carry no in-article disclaimer; the site footer one is required.
+FOOTER_RULE_FROM = "2026-10-13"
+
+
+def _load_footer_disclaimer():
+    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "i18n")
+    out = {"zh": "本站内容不构成投资建议。", "en": "Content on this site does not constitute investment advice."}
+    for k in LANGS:
+        try:
+            with open(os.path.join(root, k + ".toml"), encoding="utf-8") as fh:
+                m = re.search(r'^footer_disclaimer\s*=\s*"(.*)"\s*$', fh.read(), re.M)
+            if m:
+                out[k] = m.group(1)
+        except OSError:
+            pass
+    return out
+
+
+FOOTER_DISCLAIMER = _load_footer_disclaimer()
+
+
+class _Footer(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.depth, self.parts = 0, []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "footer":
+            self.depth += 1
+
+    def handle_endtag(self, tag):
+        if tag == "footer" and self.depth:
+            self.depth -= 1
+
+    def handle_data(self, d):
+        if self.depth:
+            self.parts.append(d)
+
+
+def footer_text(html):
+    """Whitespace-collapsed text of all <footer> elements."""
+    f = _Footer()
+    f.feed(html)
+    f.close()
+    return " ".join(" ".join(f.parts).split())
 FLOOR_RETIRED_PREFIXES = ("/posts/tongyi/", "/framework/", "/posts/daily/2026-10-10/", "/posts/daily/2026-10-11/",
                           "/posts/daily/2026-10-10-welcome/")
 FLOOR_RETIRED_PATHS = ("/posts/tongyi/", "/framework/macro/", "/en/framework/macro/",
@@ -1307,10 +1387,16 @@ def main():
     ap.add_argument("--deploy-sha", default="", help="commit SHA of the deploy being checked "
                     "(default: workflow_run.head_sha from $GITHUB_EVENT_PATH)")
     ap.add_argument("--pair-config", default=PAIR_CONFIG, help="JSON config for zh/en key-information checks")
+    ap.add_argument("--public-dir", "--local", dest="public_dir",
+                    help="check a local Hugo build (e.g. public/) instead of the live site; --base stays the site URL")
     a = ap.parse_args()
     base = a.base.rstrip("/") + "/"
+    if a.public_dir:
+        if not os.path.isdir(a.public_dir):
+            ap.error("--public-dir %s is not a directory" % a.public_dir)
+        LOCAL["dir"], LOCAL["base"] = os.path.abspath(a.public_dir), base
     sha, src = deploy_sha(a.deploy_sha)
-    report = {"base": base, "deploy_sha": sha, "deploy_sha_source": src, "pages": [], "pass": True}
+    report = {"base": base, "deploy_sha": sha, "deploy_sha_source": src, "public_dir": LOCAL["dir"], "pages": [], "pass": True}
     try:
         pair_cfg, cfg_error = load_pair_config(a.pair_config), None
     except PairConfigError as e:
