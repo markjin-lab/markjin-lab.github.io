@@ -1817,3 +1817,37 @@ class R17FooterDisclaimer(unittest.TestCase):
             self.assertNotEqual(self.FOOTER[k], sc.DISCLAIMER[k])
             self.assertNotIn("footer_principle", s)
             self.assertNotIn("@", s)
+
+
+class FooterRuleAndLocalModeTest(unittest.TestCase):
+    """Dailies from 2026-10-13 need the site footer disclaimer, not an in-article one; --public-dir mode."""
+
+    def test_footer_rule_applies_from_1013(self):
+        for lang in sc.LANGS:
+            pre = "" if lang == "zh" else "/en"
+            h = '<html lang="%s"><body><main><article><p>x</p></article></main><footer>%s</footer></body></html>' % (
+                lang, sc.FOOTER_DISCLAIMER[lang])
+            old = sc.fetch
+            try:
+                for d, want in (("2026-10-13", True), ("2026-10-12", False)):
+                    sc.fetch = lambda u, want_body=True, retries=2, _h=h: (200, _h)
+                    path = "%s/posts/daily/%s/" % (pre, d)
+                    r = sc.check_page("https://e.x/", lang, path, {}, "daily")
+                    self.assertEqual(r["checks"]["disclaimer"]["ok"], want, (lang, d))
+            finally:
+                sc.fetch = old
+
+    def test_local_mode_reads_public_dir(self):
+        import os, tempfile
+        with tempfile.TemporaryDirectory() as t:
+            os.makedirs(os.path.join(t, "a"))
+            with open(os.path.join(t, "a", "index.html"), "w") as fh:
+                fh.write("hi")
+            old = dict(sc.LOCAL)
+            try:
+                sc.LOCAL.update(dir=t, base="https://e.x/")
+                self.assertEqual(sc.fetch("https://e.x/a/"), (200, "hi"))
+                self.assertEqual(sc.fetch("https://e.x/missing/")[0], 404)
+                self.assertEqual(sc.fetch_status_nofollow("https://e.x/a/"), 200)
+            finally:
+                sc.LOCAL.clear(); sc.LOCAL.update(old)
