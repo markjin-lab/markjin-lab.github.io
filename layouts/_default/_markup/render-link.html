@@ -1,0 +1,3 @@
+{{- /* 出处编号：链接文字只有数字（如 [1]: https://… 的引用式链接）时，在链接外加方括号显示为 [1]（P2 backlog「编号没有方括号」）。其他链接照常输出。 */ -}}
+{{- $a := printf "<a href=\"%s\"%s>%s</a>" (.Destination | safeURL) (cond (ne .Title "") (printf " title=\"%s\"" .Title) "") .Text -}}
+{{- if findRE `^[0-9]+$` (string .Text) -}}[{{ $a | safeHTML }}]{{- else -}}{{ $a | safeHTML }}{{- end -}}
