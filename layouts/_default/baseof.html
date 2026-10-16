@@ -1,9 +1,11 @@
 <!doctype html><html lang="{{ i18n "html_lang" }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <script>(function(d){var t;try{t=localStorage.getItem("theme")}catch(e){}if(t==="light"||t==="dark"){d.setAttribute("data-theme",t);d.setAttribute("data-theme-pref",t)}else{d.setAttribute("data-theme-pref","system")}})(document.documentElement)</script>
-<title>{{ if not .IsHome }}{{ .Title }} · {{ end }}{{ .Site.Title }}</title>
+<title>{{ if .IsHome }}{{ .Site.Title }} · {{ i18n "home_title_tagline" }}{{ else if eq .Kind "404" }}页面不存在 / Page not found · {{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
+{{ partial "meta-description.html" . }}
+{{ if eq .Kind "404" }}<meta name="robots" content="noindex">{{ end }}
 {{ with .OutputFormats.Get "rss" }}<link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}">{{ end }}
-{{ range .AllTranslations }}<link rel="alternate" hreflang="{{ .Language.LanguageCode }}" href="{{ .Permalink }}">{{ end }}
+{{ if ne .Kind "404" }}{{ range .AllTranslations }}<link rel="alternate" hreflang="{{ .Language.LanguageCode }}" href="{{ .Permalink }}">{{ end }}{{ end }}
 <style>:root{color-scheme:light;--bg:#fff;--fg:#222;--muted:#5f6368;--link:#0b5fff;--border:#ddd;--rule:#eee;--th-bg:#eef1f4;--code-bg:#f4f6f8;--quote:#444b55;--quote-bar:#c5ccd6;--toggle-border:#767c86}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#14171c;--fg:#e4e6ea;--muted:#a6adb8;--link:#7fb0ff;--border:#3a414c;--rule:#2a3039;--th-bg:#232933;--code-bg:#1e232b;--quote:#c3c9d2;--quote-bar:#4a5260;--toggle-border:#6e7684}}
 :root[data-theme=dark]{color-scheme:dark;--bg:#14171c;--fg:#e4e6ea;--muted:#a6adb8;--link:#7fb0ff;--border:#3a414c;--rule:#2a3039;--th-bg:#232933;--code-bg:#1e232b;--quote:#c3c9d2;--quote-bar:#4a5260;--toggle-border:#6e7684}

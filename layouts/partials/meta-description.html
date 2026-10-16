@@ -1,0 +1,25 @@
+{{- /* 页面描述（<meta name="description">）。优先级：
+  1. front matter 里的 description；
+  2. i18n 里按页面路径配的 meta_desc_<路径>（首页 meta_desc_home，/posts/daily 为 meta_desc_posts_daily，依此类推）；
+  3. 普通文章取正文第一段（日报即导语），去掉出处编号后截短；
+  4. 其余页面（如标签、分类列表）用首页描述。
+  中英文各自取本语言的 i18n 和正文。 */ -}}
+{{- $desc := "" -}}
+{{- with .Description -}}
+  {{- $desc = . -}}
+{{- else -}}
+  {{- $key := "home" -}}
+  {{- if not .IsHome -}}{{- $key = replace (strings.Trim .Path "/") "/" "_" -}}{{- end -}}
+  {{- $desc = i18n (printf "meta_desc_%s" $key) -}}
+  {{- if and (not $desc) (eq .Kind "page") -}}
+    {{- with index (findRE `(?s)<p>.*?</p>` .Content 1) 0 -}}
+      {{- $t := replaceRE `<a[^>]*>\[?(\d+)\]?</a>` "[$1]" . -}}
+      {{- $t = replaceRE `\s*\[\d+\](\s*[、,，]?\s*\[\d+\])*` "" $t -}}
+      {{- $t = $t | plainify | htmlUnescape | strings.TrimSpace -}}
+      {{- $limit := cond (eq $.Language.Lang "zh") 120 200 -}}
+      {{- $desc = truncate $limit "…" $t -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if not $desc -}}{{- $desc = i18n "meta_desc_home" -}}{{- end -}}
+{{- end -}}
+{{- with $desc }}<meta name="description" content="{{ . }}">{{ end -}}

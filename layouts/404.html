@@ -1,0 +1,10 @@
+{{- /* 404 页。GitHub Pages 对任何不存在的地址只返回站点根目录的 /404.html，不分语言，所以这一页同时给中英文，链接都用站点根路径。 */ -}}
+{{ define "main" }}<article class="notfound">
+<section lang="zh-CN"><h1>页面不存在</h1>
+<p>你要找的页面不存在，可能地址输错了，也可能页面已经移走或删除。</p>
+<p><a href="{{ "/" | relURL }}">回到首页</a> · <a href="{{ "/posts/daily/" | relURL }}">看每日信号</a></p></section>
+<hr>
+<section lang="en"><h2>Page not found</h2>
+<p>The page you are looking for does not exist. The address may be mistyped, or the page may have been moved or removed.</p>
+<p><a href="{{ "/en/" | relURL }}">Go to the home page</a> · <a href="{{ "/en/posts/daily/" | relURL }}">Read the daily signals</a></p></section>
+</article>{{ end }}
