@@ -2,6 +2,8 @@ baseURL = "https://markjin-lab.github.io/"
 defaultContentLanguage = "zh"
 defaultContentLanguageInSubdir = false
 hasCJKLanguage = true
+# 生成 /robots.txt（模板见 layouts/robots.txt）
+enableRobotsTXT = true
 title = "markjin"
 [outputs]
 home = ["HTML","RSS"]
