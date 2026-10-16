@@ -1,0 +1,2 @@
+{{- $numeric := findRE `^[0-9]+$` (string .Text) -}}
+{{- if $numeric -}}[{{- end -}}<a href="{{ .Destination }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text }}</a>{{- if $numeric -}}]{{- end -}}
