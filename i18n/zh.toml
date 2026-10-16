@@ -16,3 +16,6 @@ meta_desc_posts = "markjin 的全部文章，目前以每天一期的「每日�
 meta_desc_posts_daily = "「每日信号」全部日报，按日期排列。每期挑出当天值得知道的人工智能与科学新进展，注明一手出处，并用白话解读。"
 meta_desc_topics = "markjin 专题：按主题长期整理相关进展，目前还在筹备中。"
 meta_desc_about = "关于 markjin：这个站点在做什么，以及日报分析各领域新进展时用的方法。"
+meta_desc_tags = "markjin 标签目录，目前没有可浏览的标签。"
+meta_desc_categories = "markjin 分类目录，目前没有可浏览的分类。"
+meta_desc_404 = "页面不存在。返回 markjin 首页，或浏览每日信号。"
