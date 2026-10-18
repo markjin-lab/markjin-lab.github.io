@@ -1,0 +1,13 @@
+# 已被下一条更正取代的更正条目（站点 Issue #91，Grok Bot 2026-10-18 定：更正只追加，用模板折叠，不改 content/）。
+# layouts/partials/superseded-corrections.html 按本清单把对应条目折叠成 <details>，条目原文不变，最新一条照常展开。
+# 定位：page = 内容目录 + 文件名（不含语言后缀，中英两页共用）；date = 条目的加粗日期；
+#       occurrence = 更正区里该日期的第几条（从 1 起）；langs = 适用的语言。
+# 找不到对应条目或匹配不唯一时构建报错，不会悄悄折叠错条目。
+- page: posts/daily/2026-10-17
+  date: "2026-10-18"
+  occurrence: 1          # 更正区第 2 条；被同日（补充）一条取代（导语写法）
+  langs: [zh, en]
+- page: posts/daily/2026-10-18
+  date: "2026-10-18"
+  occurrence: 1          # 更正区第 1 条；被同日（补充）一条取代（导语写法、原帖说法核验结论）
+  langs: [zh, en]

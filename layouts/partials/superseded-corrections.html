@@ -1,0 +1,38 @@
+{{- /*
+  按 data/superseded_corrections.yaml 把已被下一条更正取代的条目折叠显示（站点 Issue #91）。
+  输入：页面上下文；输出：页面正文 HTML。清单里没有本页时原样返回 .Content（字节不变）。
+  只在「更正」/「Corrections」二级标题之后找 <p><strong>日期</strong>… 的条目，按 occurrence 取第几条，
+  整段原样放进 <details>，<summary> 显示日期和 i18n 标注 correction_superseded。条目文字与最新一条都不改。
+*/ -}}
+{{- $content := .Content -}}
+{{- $out := $content -}}
+{{- with .File -}}
+{{- $key := path.Join .Dir .ContentBaseName -}}
+{{- $lang := $.Language.Lang -}}
+{{- range site.Data.superseded_corrections -}}
+  {{- if and (eq .page $key) (in .langs $lang) -}}
+    {{- $heads := findRE `<h2[^>]*>(?:更正|Corrections)</h2>` $out -}}
+    {{- if ne (len $heads) 1 -}}
+      {{- errorf "superseded_corrections: %s (%s) 找不到唯一的更正标题" $key $lang -}}
+    {{- end -}}
+    {{- $head := index $heads 0 -}}
+    {{- $parts := split $out $head -}}
+    {{- $section := index $parts 1 -}}
+    {{- with findRE `<h[1-6][\s>]` $section 1 }}{{ $section = index (split $section (index . 0)) 0 }}{{ end -}}
+    {{- $pat := printf `<p><strong>%s</strong>[\s\S]*?</p>` (string .date) -}}
+    {{- $entries := findRE $pat $section -}}
+    {{- $n := int .occurrence -}}
+    {{- if or (lt $n 1) (gt $n (len $entries)) -}}
+      {{- errorf "superseded_corrections: %s (%s) 没有第 %d 条 %s 更正" $key $lang $n .date -}}
+    {{- end -}}
+    {{- $p := index $entries (sub $n 1) -}}
+    {{- if ne (strings.Count $p $out) 1 -}}
+      {{- errorf "superseded_corrections: %s (%s) 条目在正文中不唯一" $key $lang -}}
+    {{- end -}}
+    {{- $note := i18n "correction_superseded" -}}
+    {{- $wrapped := printf "<details class=\"correction-superseded\">\n<summary><strong>%s</strong> <em class=\"correction-superseded-note\">%s</em></summary>\n%s\n</details>" (string .date) $note $p -}}
+    {{- $out = replace $out $p $wrapped -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+{{- return $out -}}
