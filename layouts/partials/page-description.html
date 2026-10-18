@@ -1,6 +1,6 @@
 {{- /* 页面描述：返回一个字符串，供 <meta name="description">（meta-description.html）和首页、列表每行的摘要共用。
   用法：partial "page-description.html" (dict "page" 页面 "fallback" 是否在取不到时退回首页描述)。meta 标签传 true；列表摘要传 false，取不到就返回空串、不显示摘要行。
-  可选参数 strip（只给首页和列表摘要用，meta 标签不传）：为 true 时在截短之前去掉导语固定开头「今天最值得知道的是：」/ "The thing most worth knowing today:"（全角或半角冒号，及其后空白），英文去掉后首字母大写；没有这个开头的原样保留；之后照常按下述规则截短。
+  可选参数 strip（只给首页和列表摘要用，meta 标签不传）：为 true 时在截短之前去掉导语固定开头，清单在 hugo.toml 的 [params] summary_strip_prefixes（不分大小写；清单项末尾有冒号的，全角或半角冒号都认，冒号及其后空白一并去掉；没有冒号的，开头后须接空白，空白一并去掉），只去第一个匹配的开头，英文去掉后首字母大写；没有清单里开头的原样保留；之后照常按下述规则截短。
   中英文各取本语言的 i18n 和正文。取值优先级：
   1. front matter 里的 description；2. i18n 的 meta_desc_<键>：首页 home，404 页 404，其余按路径（/posts/daily → posts_daily，标签页 tags、分类页 categories，依此类推）；
   3. 普通文章（Kind 为 page）没有对应键时取渲染后正文的第一个 <p>（日报即导语）；按句末标点（中文 。！？，英文 .!? 后接空白或结尾）切出的第一句不超过上限就只用这一句；4. 仍为空且 fallback 为 true 时用首页描述（meta_desc_home）。
@@ -37,10 +37,27 @@
 {{- $desc = $desc | plainify | htmlUnescape | strings.TrimSpace -}}
 {{- $desc = replaceRE `\s+` " " $desc -}}
 {{- if $strip -}}
-  {{- $prefixRE := cond (eq $p.Language.Lang "zh") `^今天最值得知道的是\s*[：:]\s*` `^(?i:the thing most worth knowing today)\s*[：:]\s*` -}}
-  {{- if findRE $prefixRE $desc 1 -}}
-    {{- $desc = replaceRE $prefixRE "" $desc 1 -}}
-    {{- if ne $p.Language.Lang "zh" -}}{{- $desc = strings.FirstUpper $desc -}}{{- end -}}
+  {{- $stripped := false -}}
+  {{- range $p.Site.Params.summary_strip_prefixes -}}
+    {{- if not $stripped -}}
+      {{- $hasColon := findRE `[：:]\s*$` . 1 -}}
+      {{- $body := strings.TrimSpace (replaceRE `[：:]\s*$` "" .) -}}
+      {{- $n := strings.RuneCount $body -}}
+      {{- if and $body (ge (strings.RuneCount $desc) $n) (eq (lower (substr $desc 0 $n)) (lower $body)) -}}
+        {{- $rest := substr $desc $n -}}
+        {{- $ok := false -}}
+        {{- if $hasColon -}}
+          {{- if findRE `^\s*[：:]` $rest 1 -}}{{- $rest = replaceRE `^\s*[：:]\s*` "" $rest 1 -}}{{- $ok = true -}}{{- end -}}
+        {{- else if findRE `^\s` $rest 1 -}}
+          {{- $rest = strings.TrimLeft " \t\n" $rest -}}{{- $ok = true -}}
+        {{- end -}}
+        {{- if and $ok $rest -}}
+          {{- $desc = $rest -}}
+          {{- if ne $p.Language.Lang "zh" -}}{{- $desc = strings.FirstUpper $desc -}}{{- end -}}
+          {{- $stripped = true -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}
 {{- $limit := cond (eq $p.Language.Lang "zh") 120 200 -}}
