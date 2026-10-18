@@ -122,9 +122,9 @@ class ListSummaryEdgeCases(_Built):
         self.assertEqual(s, self.en_meta("n17-single-quote-semicolon"))
         self.assertTrue(s.endswith("…"), s)
         self.assertNotIn("‘", s)
-        # list_summary：原样显示（不截断、不改大小写），优先于自动断句（en-list-summary 自动断句会是空摘要）
-        self.assertEqual(rows["en-list-summary"], "The U.S. Senate passed a chip bill by 5 < 6 after R&D talks.")
-        self.assertEqual(rows["en-list-summary-lower"], "A lab released weights.")
+        # list_summary：原样显示（不截断、不改大小写，导语小写开头时照样小写），优先于自动断句（en-list-summary 自动断句会是空摘要）
+        self.assertEqual(rows["en-list-summary"], "the U.S. Senate passed a chip bill by 5 < 6 after R&D talks.")
+        self.assertEqual(rows["en-list-summary-lower"], "a lab released weights.")
         # 没有去掉开头的不改大小写
         self.assertEqual(rows["en-npm"], "npm released a new version of its command-line client.")
         # 第 3 条：首词是大小写混合的词（arXiv、iPhone）不改；普通小写首词大写
@@ -212,6 +212,7 @@ class ListSummaryInvalid(unittest.TestCase):
         "ls-not-string": "list_summary 必须是非空字符串",
         "ls-too-long": "list_summary 超过 320 个字符",
         "ls-not-in-lede": "list_summary 在正文导语段里找不到逐字相同的内容",
+        "ls-case-changed": "list_summary 在正文导语段里找不到逐字相同的内容",
         "fm-summary": "front matter 不能用 summary",
     }
 

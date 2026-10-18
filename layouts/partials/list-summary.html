@@ -2,7 +2,7 @@
   有 list_summary 时首页和列表原样显示它（模板转义，不截断、不改大小写），没有时才走 page-description.html 的自动断句。
   校验（report 为 true 时用 errorf 让构建失败；meta-description.html 每页调用一次并传 true，列表调用时不重复报错）：
   1. 必须是非空字符串（去掉首尾空白后不为空）；2. 不超过 320 个字符（Unicode 字符数）；
-  3. 必须能在本页正文导语段（第一个 <p>，按 clean-text.html 清洗）里逐字找到：去掉导语固定开头后比较，英文开头小写时也接受首字母大写的写法。
+  3. 必须能在本页正文导语段（第一个 <p>，按 clean-text.html 清洗）里逐字找到：去掉导语固定开头后比较，大小写也必须一致（导语小写开头时，list_summary 也必须小写开头）。
   另有护栏：front matter 里出现 summary 就报错。Hugo 会用它覆盖 .Summary，而内置 RSS 模板的 <description> 用的就是 .Summary，会改变 feed；请改用 list_summary。 */ -}}
 {{- $p := .page -}}
 {{- $report := .report -}}
@@ -25,7 +25,7 @@
       {{- with findRE `(?s)<p>.*?</p>` $p.Content 1 -}}{{- $lede = partial "clean-text.html" (index . 0) -}}{{- end -}}
     {{- end -}}
     {{- $rest := index (partial "strip-prefix.html" (dict "text" $lede "site" $p.Site)) "rest" -}}
-    {{- if and $lede (or (strings.Contains $rest $v) (strings.Contains (strings.FirstUpper $rest) $v)) -}}
+    {{- if and $lede (strings.Contains $rest $v) -}}
       {{- $out = $v -}}
     {{- else if $report -}}
       {{- errorf "%s: list_summary 在正文导语段里找不到逐字相同的内容（已去掉导语固定开头再比较）：%q" $where $v -}}
