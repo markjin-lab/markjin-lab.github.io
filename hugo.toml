@@ -10,7 +10,7 @@ home = ["HTML","RSS"]
 section = ["HTML","RSS"]
 
 [params]
-# 导语固定开头清单：只影响首页和列表的摘要行（layouts/partials/strip-prefix.html，由 page-description.html 的 strip 参数和 list-summary.html 使用），meta description 和正文不受影响；每项匹配不分大小写，末尾的冒号全角半角都认，冒号后的空白一并去掉；不带冒号的项后面必须跟空白，或者正好在文末；摘要的其余规则见 page-description.html 末尾的注释；导语换新的固定开头时在这里加一项。
+# 导语固定开头清单：只用来认出「摘要只剩这句开头」的情形（page-description.html 列表摘要的第 5 条）：自动摘要或回退的 meta 以这里的某一项起头（不分大小写，不看末尾冒号）、其后不含任何字母时，首页和列表不显示摘要行。摘要本身不去掉开头，导语原句照原样显示（#109）；meta description 和正文不受影响。摘要的其余规则见 page-description.html 末尾的注释；导语换新的固定开头时在这里加一项。
 summary_strip_prefixes = ["今天最值得知道的是：", "The thing most worth knowing today:", "The main story today is"]
 
 # 文件命名：<name>.md = 中文（默认，URL 不变，位于 /）；<name>.en.md = 英文（位于 /en/）。见 docs/i18n.md。
