@@ -1,7 +1,7 @@
 # markjin 工作流
 
 ## 六个阶段
-1. **收集 collect**：每日 05:00 与 06:00 (SGT) 抓取 arXiv、FRED、X（2026-10-12 起，与路线图一致）；原始数据逐字节存入 `markjin-data/raw/YYYY-MM-DD/`，sha256 记入 manifest。
+1. **收集 collect**：每日 05:00 与 06:00 (SGT) 采集 arXiv、X（2026-10-12 起）；自 2026-10-18 起不再向 FRED 发请求，新数据机构试采与接入按路线图第十节和采集规划第六节执行；取得的原始数据逐字节存入 `markjin-data/raw/YYYY-MM-DD/`，sha256 记入 manifest。
 2. **消化 digest**：抽取要点，写入 `markjin-data/digest/`，每条要点保留来源链接。
 3. **生产 produce**：生成中文每日信号与专题草稿。
 4. **发布 publish**：合入本仓库 `content/`，Actions 自动部署。
