@@ -19,3 +19,5 @@ meta_desc_about = "About markjin: what this site does and the method the daily n
 meta_desc_tags = "markjin tags: no tags are listed yet."
 meta_desc_categories = "markjin categories: no categories are listed yet."
 meta_desc_404 = "Page not found. Return to markjin or browse Daily signals."
+correction_note_sep = " "
+correction_superseded = "(No. {{ .n }}; superseded by the next correction: No. {{ .next }}, {{ .date }})"

@@ -1,0 +1,108 @@
+{{- /*
+  校验 data/superseded_corrections.yaml（站点 Issue #91）。整站只算一次（由 superseded-corrections.html 经 partialCached 调用，上下文为页面）。
+  返回 true 表示清单可用；任何一项不符都 errorf（构建失败）并返回 false，调用方随即不再索引或替换。
+  页面内的检查（更正标题唯一、目标条目存在、其后确有下一条更正）在 superseded-corrections.html 里做。
+*/ -}}
+{{- $ok := true -}}
+{{- $list := site.Data.superseded_corrections -}}
+{{- $siteLangs := slice -}}
+{{- range $.Sites }}{{ $siteLangs = $siteLangs | append .Language.Lang }}{{ end -}}
+{{- $keysRequired := slice "page" "date" "occurrence" "langs" "kind" -}}
+{{- $keysAllowed := $keysRequired | append "note_zh" "note_en" -}}
+{{- $seen := slice -}}
+{{- if not $list -}}
+  {{- /* 没有清单或清单为空：不做任何标注 */ -}}
+{{- else if not (reflect.IsSlice $list) -}}
+  {{- errorf "superseded_corrections: 清单必须是列表" -}}
+  {{- $ok = false -}}
+{{- else -}}
+  {{- range $i, $e := $list -}}
+    {{- $at := printf "superseded_corrections 第 %d 项" (add $i 1) -}}
+    {{- $good := true -}}
+    {{- if not (reflect.IsMap $e) -}}
+      {{- errorf "%s: 必须是键值表" $at -}}{{- $good = false -}}
+    {{- else -}}
+      {{- range $k, $_ := $e -}}
+        {{- if not (in $keysAllowed $k) -}}{{- errorf "%s: 未知键 %q（只允许 page、date、occurrence、langs、kind、note_zh、note_en）" $at $k -}}{{- $good = false -}}{{- end -}}
+      {{- end -}}
+      {{- range $keysRequired -}}
+        {{- if not (isset $e .) -}}{{- errorf "%s: 缺少键 %q" $at . -}}{{- $good = false -}}{{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if $good -}}
+      {{- $page := index $e "page" -}}
+      {{- $date := index $e "date" -}}
+      {{- $occ := index $e "occurrence" -}}
+      {{- $langs := index $e "langs" -}}
+      {{- $kind := index $e "kind" -}}
+      {{- if or (ne (printf "%T" $page) "string") (not (findRE `^[A-Za-z0-9_-]+(/[A-Za-z0-9_-]+)*$` $page)) -}}
+        {{- errorf "%s: page 必须是不带 .md、语言后缀和首尾斜杠的内容路径，如 posts/daily/2026-10-17（现为 %v）" $at $page -}}{{- $good = false -}}
+      {{- end -}}
+      {{- if or (ne (printf "%T" $date) "string") (not (findRE `^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$` $date)) -}}
+        {{- errorf "%s: date 必须是 YYYY-MM-DD 格式的日期字符串，建议加引号，如 \"2026-10-18\"（现为 %v）" $at $date -}}{{- $good = false -}}
+      {{- else -}}
+        {{- $last := ((time.AsTime (printf "%s-01" (substr $date 0 7))).AddDate 0 1 -1).Day -}}
+        {{- if gt (int (strings.TrimLeft "0" (substr $date 8 2))) $last -}}
+          {{- errorf "%s: date %s 不是有效日期" $at $date -}}{{- $good = false -}}
+        {{- end -}}
+      {{- end -}}
+      {{- if not (in (slice "int" "int64" "uint64") (printf "%T" $occ)) -}}
+        {{- errorf "%s: occurrence 必须是正整数（现为 %v）" $at $occ -}}{{- $good = false -}}
+      {{- else if lt (int $occ) 1 -}}
+        {{- errorf "%s: occurrence 必须从 1 起（现为 %v）" $at $occ -}}{{- $good = false -}}
+      {{- end -}}
+      {{- if or (ne (printf "%T" $kind) "string") (not (in (slice "full" "partial") $kind)) -}}
+        {{- errorf "%s: kind 只能是 full 或 partial（现为 %v）" $at $kind -}}{{- $good = false -}}
+      {{- end -}}
+      {{- range slice "note_zh" "note_en" -}}
+        {{- if isset $e . -}}
+          {{- $v := index $e . -}}
+          {{- if or (ne (printf "%T" $v) "string") (eq (strings.TrimSpace $v) "") -}}
+            {{- errorf "%s: %s 必须是非空字符串（现为 %v）" $at . $v -}}{{- $good = false -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+      {{- if or (not (reflect.IsSlice $langs)) (eq (len $langs) 0) -}}
+        {{- errorf "%s: langs 必须是非空列表，如 [zh, en]（现为 %v）" $at $langs -}}{{- $good = false -}}
+      {{- else -}}
+        {{- $ls := slice -}}
+        {{- range $langs -}}
+          {{- if or (ne (printf "%T" .) "string") (not (in $siteLangs .)) -}}
+            {{- errorf "%s: langs 里的 %v 不是本站语言（%s）" $at . (delimit $siteLangs "、") -}}{{- $good = false -}}
+          {{- else if in $ls . -}}
+            {{- errorf "%s: langs 里的 %s 重复" $at . -}}{{- $good = false -}}
+          {{- else -}}
+            {{- $ls = $ls | append . -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+      {{- if $good -}}
+        {{- range $langs -}}
+          {{- $lang := . -}}
+          {{- if and (eq $kind "partial") (not (isset $e (printf "note_%s" $lang))) -}}
+            {{- errorf "%s: kind 为 partial，langs 含 %s，但缺少 note_%s" $at $lang $lang -}}{{- $good = false -}}
+          {{- end -}}
+          {{- $k := printf "%s|%s|%d|%s" $page $date (int $occ) $lang -}}
+          {{- if in $seen $k -}}
+            {{- errorf "%s: %s（%s）%s 第 %d 条已在清单中登记过" $at $page $lang $date (int $occ) -}}{{- $good = false -}}
+          {{- else -}}
+            {{- $seen = $seen | append $k -}}
+          {{- end -}}
+          {{- $found := false -}}
+          {{- range $.Sites -}}
+            {{- if eq .Language.Lang $lang -}}
+              {{- with .GetPage (printf "/%s" $page) -}}
+                {{- if and .File (eq .Kind "page") (eq .Lang $lang) (eq (path.Join .File.Dir .File.ContentBaseName) $page) -}}{{- $found = true -}}{{- end -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+          {{- if not $found -}}
+            {{- errorf "%s: 找不到 %s 的 %s 页面" $at $page $lang -}}{{- $good = false -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if not $good }}{{ $ok = false }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $ok -}}

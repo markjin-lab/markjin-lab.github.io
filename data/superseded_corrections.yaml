@@ -1,0 +1,24 @@
+# 更正标注清单（站点 Issue #91）。规则：已发布的更正条目只追加、不改字；
+# 当后一条更正改动了前一条更正所记的内容时，在本清单登记前一条，由模板加标注，content/ 不改。
+#   kind: full    —— 该条所记改动已全部被后一条推翻：折叠成 <details>，摘要标“已由下一条更正取代”；
+#   kind: partial —— 只有部分说明被后一条更新：不折叠，在该条日期后显示 note_zh / note_en 写明哪些说明被更新
+#                   （partial 条目所列每个语言都必须有对应 note）。
+# full 的标注写明下一条在更正区的序号和日期；条目原文一字不改。
+# 定位：page = 内容目录 + 文件名（不含 .md 和语言后缀，中英两页共用）；date = 条目开头的加粗日期（按字面比较）；
+#       occurrence = 更正区里该日期的第几条（从 1 起）；langs = 适用的语言（zh、en）。
+# 构建时逐项校验（layouts/partials/superseded-corrections-check.html）：键名、类型、日期、页面和语言、note、
+# 是否重复、目标条目是否存在且其后确有下一条更正；任何一项不符即构建失败。
+- page: posts/daily/2026-10-17
+  date: "2026-10-18"
+  occurrence: 1          # 更正区第 2 条（共 3 条）；第 3 条（补充）只重写导语，第 2 条所记末影龙、智能体改白话等仍有效
+  langs: [zh, en]
+  kind: partial
+  note_zh: "（“后三篇论文并入一句”和“括注减为两处”的记录已由下方补充更正更新）"
+  note_en: "(The addendum below updates the statements that the last three papers shared one sentence and that two parenthetical notes remained)"
+- page: posts/daily/2026-10-18
+  date: "2026-10-18"
+  occurrence: 1          # 更正区第 1 条（共 2 条）；第 2 条（补充）更新导语和原帖说法的核验结论，其余改动仍有效
+  langs: [zh, en]
+  kind: partial
+  note_zh: "（导语范围及原帖“取消闰秒”的核验结论已由下方补充更正更新）"
+  note_en: "(The addendum below updates the scope of the opening and the assessment of the post’s ‘eliminating leap seconds’ claim)"

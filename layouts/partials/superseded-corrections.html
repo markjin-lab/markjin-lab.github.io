@@ -1,0 +1,85 @@
+{{- /*
+  按 data/superseded_corrections.yaml 给更正区里被后一条更正改动过的条目加标注（站点 Issue #91）。
+  输入：页面上下文；输出：页面正文 HTML。清单里没有本页时原样返回 .Content（字节不变）。
+  只在「更正」/「Corrections」二级标题之后、下一个标题之前找 <p><strong>YYYY-MM-DD</strong>… 条目，
+  日期按字面比较，按 occurrence 取该日期的第几条。
+    kind: full    —— 整段原样放进 <details>，<summary> 显示日期和“已由下一条更正取代”及下一条的序号、日期；
+    kind: partial —— 不折叠，只在该条加粗日期后插入清单里当前语言的 note_zh / note_en（HTML 转义）。
+  条目文字一字不改；清单校验不通过或本页检查不通过时 errorf（构建失败），并原样返回 .Content，不再索引或替换。
+*/ -}}
+{{- $content := .Content -}}
+{{- $out := $content -}}
+{{- $ok := partialCached "superseded-corrections-check.html" . "superseded-corrections-check" -}}
+{{- if and $ok .File site.Data.superseded_corrections -}}
+  {{- $key := path.Join .File.Dir .File.ContentBaseName -}}
+  {{- $lang := .Language.Lang -}}
+  {{- $targets := slice -}}
+  {{- range site.Data.superseded_corrections -}}
+    {{- if and (eq .page $key) (in .langs $lang) }}{{ $targets = $targets | append . }}{{ end -}}
+  {{- end -}}
+  {{- if $targets -}}
+    {{- $heads := findRE `<h2[^>]*>(?:更正|Corrections)</h2>` $content -}}
+    {{- if ne (len $heads) 1 -}}
+      {{- errorf "superseded_corrections: %s（%s）找不到唯一的更正标题" $key $lang -}}
+      {{- $ok = false -}}
+    {{- end -}}
+    {{- if $ok -}}
+      {{- $section := index (split $content (index $heads 0)) 1 -}}
+      {{- with findRE `<h[1-6][\s>]` $section 1 }}{{ $section = index (split $section (index . 0)) 0 }}{{ end -}}
+      {{- $entries := slice -}}
+      {{- $dates := slice -}}
+      {{- range findRE `<p><strong>[^<]*</strong>[\s\S]*?</p>` $section -}}
+        {{- $d := replaceRE `^<p><strong>([^<]*)</strong>[\s\S]*$` "$1" . -}}
+        {{- if findRE `^\d{4}-\d{2}-\d{2}$` $d -}}
+          {{- $entries = $entries | append . -}}
+          {{- $dates = $dates | append $d -}}
+        {{- end -}}
+      {{- end -}}
+      {{- range $targets -}}
+        {{- $t := . -}}
+        {{- if $ok -}}
+          {{- $idx := -1 -}}
+          {{- $seenN := 0 -}}
+          {{- range $i, $d := $dates -}}
+            {{- if eq $d $t.date -}}
+              {{- $seenN = add $seenN 1 -}}
+              {{- if eq $seenN (int $t.occurrence) }}{{ $idx = $i }}{{ end -}}
+            {{- end -}}
+          {{- end -}}
+          {{- if lt $idx 0 -}}
+            {{- errorf "superseded_corrections: %s（%s）更正区没有第 %d 条 %s 更正" $key $lang (int $t.occurrence) $t.date -}}
+            {{- $ok = false -}}
+          {{- else if ge (add $idx 1) (len $entries) -}}
+            {{- errorf "superseded_corrections: %s（%s）%s 第 %d 条是更正区最后一条，其后没有下一条更正，不能标为被取代或被更新" $key $lang $t.date (int $t.occurrence) -}}
+            {{- $ok = false -}}
+          {{- else -}}
+            {{- $p := index $entries $idx -}}
+            {{- if or (ne (strings.Count $p $content) 1) (ne (strings.Count $p $out) 1) -}}
+              {{- errorf "superseded_corrections: %s（%s）%s 第 %d 条在正文中不唯一" $key $lang $t.date (int $t.occurrence) -}}
+              {{- $ok = false -}}
+            {{- else -}}
+              {{- $args := dict "n" (add $idx 1) "next" (add $idx 2) "date" (index $dates (add $idx 1)) -}}
+              {{- $sep := i18n "correction_note_sep" -}}
+              {{- $noteStyle := "font-style:normal;font-weight:normal;color:var(--muted)" -}}
+              {{- $prefix := printf "<p><strong>%s</strong>" $t.date -}}
+              {{- $new := "" -}}
+              {{- if eq $t.kind "full" -}}
+                {{- $note := i18n "correction_superseded" $args -}}
+                {{- if not $note }}{{ errorf "superseded_corrections: 缺少 %s 语言的 i18n 键 correction_superseded" $lang }}{{ $ok = false }}{{ end -}}
+                {{- $new = printf "<details class=\"correction-superseded\" style=\"margin:1em 0\">\n<summary style=\"cursor:pointer\"><strong>%s</strong>%s<span class=\"correction-note\" style=\"%s\">%s</span></summary>\n%s\n</details>" $t.date $sep $noteStyle $note $p -}}
+              {{- else -}}
+                {{- $note := htmlEscape (index $t (printf "note_%s" $lang) | default "") -}}
+                {{- if not $note }}{{ errorf "superseded_corrections: %s（%s）partial 条目缺少 note_%s" $key $lang $lang }}{{ $ok = false }}{{ end -}}
+                {{- if not (hasPrefix $p $prefix) }}{{ errorf "superseded_corrections: %s（%s）条目开头不是 %s" $key $lang $prefix }}{{ $ok = false }}{{ end -}}
+                {{- $new = printf "%s%s<span class=\"correction-note\" style=\"%s\">%s</span>%s" $prefix $sep $noteStyle $note (strings.TrimPrefix $prefix $p) -}}
+              {{- end -}}
+              {{- if $ok }}{{ $out = replace $out $p $new }}{{ end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $ok }}{{ $out = $content }}{{ end -}}
+{{- return $out -}}
