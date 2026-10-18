@@ -191,6 +191,25 @@ class ListSummaryEdgeCases(_Built):
         self.assertEqual(self.en_meta("i109-mid-cite"), "The main story today is a paper and a dataset, both about refusals.")
         self.assertEqual(self.meta("posts/daily/i109-zh-mid-cite/index.html"), "今天最值得知道的是：一篇论文 和一个数据集 都研究拒答。")
 
+    def test_issue_112_full_sentence_cap(self):
+        # #112 裁定（Grok Bot 2026-10-19 07:46 SGT）：自动摘要整句上限 360；恰好 360 字符整句显示（只去句末编号），
+        # 361 字符退回原处理：在前 320 字符内引号括号外最后一个截断点截断加「…」
+        en, zh = self.rows("en/posts/daily/index.html"), self.rows("posts/daily/index.html")
+        for rows, slug, sep in ((en, "i112-en", ";"), (zh, "i112-zh", "；")):
+            full = rows[slug + "-360"]
+            self.assertEqual(len(full), 360, full)
+            self.assertFalse(full.endswith("…"), full)
+            self.assertNotIn("[1]", full)
+            self.assertTrue(full.startswith(("The main story today is", "今天最值得知道的是：")), full)
+            cut = rows[slug + "-361"]
+            self.assertTrue(cut.endswith("…"), cut)
+            self.assertLessEqual(len(cut), 320)
+            self.assertTrue(full.startswith(cut[:-1]), cut)
+            self.assertEqual(full[len(cut) - 1], sep, cut)
+        # meta description 上限不变（中文 120、英文 200）
+        self.assertLessEqual(len(self.en_meta("i112-en-360")), 200)
+        self.assertLessEqual(len(self.meta("posts/daily/i112-zh-360/index.html")), 120)
+
     def test_list_summary_escaped(self):
         s = (self.out / "en/posts/daily/index.html").read_text(encoding="utf-8")
         self.assertIn("chip bill by 5 &lt; 6 after R&amp;D talks.</p>", s)
@@ -337,11 +356,11 @@ class RequireHugo(unittest.TestCase):
 
 
 class ListSummaryRegression(_Built):
-    """10-16、10-17、10-18 三期（#109）：首页和列表的摘要是导语首句原文，开头套话照留、大小写不改，只去句末出处编号；
-    只有首句超过 320 字符时才按原有长度规则明确截短（以「…」结尾，截前部分仍与导语开头逐字一致）。"""
+    """10-13、10-16、10-17、10-18 四期（#109、#112）：首页和列表的摘要是导语首句原文，开头套话照留、大小写不改，只去句末出处编号；
+    只有首句超过 360 字符（#112 裁定的自动摘要整句上限）时才按原有处理明确截短（以「…」结尾，截前部分仍与导语开头逐字一致）。"""
     CONTENT = ROOT / "content"
     WITH_DATA = True
-    DATES = ("2026-10-16", "2026-10-17", "2026-10-18")
+    DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     END_CITES = re.compile(r"\s*\[\d+\](?:\s*[、,，]?\s*\[\d+\])*(\s*(?:[。！？.!?]|$))")
 
     def lede(self, path):
@@ -367,8 +386,8 @@ class ListSummaryRegression(_Built):
                 lede = self.lede(path)
                 first = self.first_sentence(lede, zh)
                 if s.endswith("…"):
-                    # 首句超过 320 字符：按原有长度规则截短，截前部分是导语开头原文
-                    self.assertGreater(len(first), 320, (d, s))
+                    # 首句超过 360 字符：按原有处理截短，截前部分是导语开头原文
+                    self.assertGreater(len(first), 360, (d, s))
                     self.assertTrue(lede.startswith(s[:-1]), (d, s))
                 else:
                     # 与导语首句逐字一致（含开头套话和大小写），句末出处编号已去掉
@@ -377,6 +396,13 @@ class ListSummaryRegression(_Built):
 
     def test_en(self):
         self.check("en/")
+        # #112：10-13、10-16 英文首句加上开头后超过 320、不超过 360，整句显示（只去句末编号），不截短
+        for page in ("en/index.html", "en/posts/daily/index.html"):
+            rows = self.rows(page)
+            for d in ("2026-10-13", "2026-10-16"):
+                first = self.first_sentence(self.lede("en/posts/daily/%s/index.html" % d), False)
+                self.assertEqual(rows[d], first, (page, d))
+                self.assertFalse(rows[d].endswith("…"), (page, d))
 
     def test_zh(self):
         self.check("")
