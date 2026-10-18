@@ -1,2 +1,3 @@
-{{- /* <meta name="description">：取值和处理规则见 page-description.html（取不到时退回首页描述）。 */ -}}
+{{- /* <meta name="description">：取值和处理规则见 page-description.html（取不到时退回首页描述）。每页顺带校验一次 list_summary 和 summary（见 list-summary.html），不输出任何内容。 */ -}}
+{{- $_ := partial "list-summary.html" (dict "page" . "report" true) -}}
 {{- with partial "page-description.html" (dict "page" . "fallback" true) }}<meta name="description" content="{{ . }}">{{ end -}}

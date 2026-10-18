@@ -1,0 +1,81 @@
+{{- /* 列表摘要断句用的逐字扫描（返回 dict）。参数：dict "text" 文字 "zh" 是否中文。
+  引号和括号配对追踪：中文 “” 「」 『』 （），英文 “” ‘’ ()，另有 [] 【】 《》 和直双引号 "（同一个字符开合）。
+  ’ 只在已有对应的 ‘ 时才算闭合：前后都是拉丁字母的 ’ 是词内撇号（it’s），不改变引号状态；前面没有 ‘ 的 ’（students’）也按撇号处理。
+  前面紧挨拉丁字母或数字的 ‘ 不算开引号（汉字后的 ‘ 照常算）。闭合符号与最近的开符号对不上，或扫完仍有没闭合的开符号，bad 为 true。
+  返回：
+  - bad：本段文字里引号或括号配对不上；
+  - end（中文）：第一个在引号和括号外的 。！？（连写时取最后一个）的位置，没有为 -1；
+  - cands、candPos、candOK（英文）：候选句界数、最后一个候选的位置、该候选可否断句。候选句界是 . ? ! 后接空格的每一处（不论在不在引号或括号里，也不论后面是什么字），
+    另外 . ? ! … 后接闭合引号或括号、再接空格和大写字母，以及 … 后接空格和大写字母，也算候选（这两种永远不可断，只为把“说完一句后接新句”的情形计入，避免并句）；
+    可断 = 是 . ? ! 后接空格的那种、在引号和括号外、空格后是大写字母、且句点前的词不是缩写（缩写清单见 $abbrRE；单个字母加点；词里另有句点的，如 U.S.、U.A.E.、e.g.、a.m.、v0.139.、stalled...）；
+  - cut：前 320 字符内、引号和括号外最后一个截断点的位置（中文 ； 和 —— 的第一个 —，英文 ; — 和两侧有空格的 –），没有为 -1。 */ -}}
+{{- $s := .text -}}
+{{- $zh := .zh -}}
+{{- $max := 320 -}}
+{{- $chars := split $s "" -}}
+{{- $n := len $chars -}}
+{{- $openers := slice "“" "(" "（" "「" "『" "[" "【" "《" -}}
+{{- $pairs := dict "”" "“" ")" "(" "）" "（" "」" "「" "』" "『" "]" "[" "】" "【" "》" "《" -}}
+{{- $abbrRE := `(?i)^(?:mr|mrs|ms|dr|jr|sr|st|sen|rep|gov|gen|inc|ltd|co|corp|etc|vs|approx|fig|figs|no|nos|prof|cf|al|ca|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)[.?!]$` -}}
+{{- $st := slice -}}
+{{- $bad := false -}}
+{{- $end := -1 -}}
+{{- $cands := 0 -}}
+{{- $candPos := -1 -}}
+{{- $candOK := false -}}
+{{- $cut := -1 -}}
+{{- $ws := 0 -}}
+{{- range $i, $c := $chars -}}
+  {{- $prev := "" -}}{{- if gt $i 0 -}}{{- $prev = index $chars (sub $i 1) -}}{{- end -}}
+  {{- $next := "" -}}{{- if lt (add $i 1) $n -}}{{- $next = index $chars (add $i 1) -}}{{- end -}}
+  {{- $depth0 := eq (len $st) 0 -}}
+  {{- $top := "" -}}{{- if not $depth0 -}}{{- $top = index $st (sub (len $st) 1) -}}{{- end -}}
+  {{- if eq $c " " -}}{{- $ws = add $i 1 -}}{{- end -}}
+  {{- /* 配对 */ -}}
+  {{- if eq $c "\"" -}}
+    {{- if eq $top "\"" -}}{{- $st = first (sub (len $st) 1) $st -}}
+    {{- else if in $st "\"" -}}{{- $bad = true -}}
+    {{- else -}}{{- $st = $st | append $c -}}{{- end -}}
+  {{- else if eq $c "’" -}}
+    {{- if and (findRE `^\p{Latin}$` $prev 1) (findRE `^\p{Latin}$` $next 1) -}}
+    {{- else if in $st "‘" -}}
+      {{- if eq $top "‘" -}}{{- $st = first (sub (len $st) 1) $st -}}{{- else -}}{{- $bad = true -}}{{- end -}}
+    {{- end -}}
+  {{- else if eq $c "‘" -}}
+    {{- if not (findRE `^[\p{Latin}0-9]$` $prev 1) -}}{{- $st = $st | append $c -}}{{- end -}}
+  {{- else if in $openers $c -}}
+    {{- $st = $st | append $c -}}
+  {{- else if isset $pairs $c -}}
+    {{- if eq $top (index $pairs $c) -}}{{- $st = first (sub (len $st) 1) $st -}}{{- else -}}{{- $bad = true -}}{{- end -}}
+  {{- end -}}
+  {{- /* 句界 */ -}}
+  {{- if $zh -}}
+    {{- if and (lt $end 0) $depth0 (in (slice "。" "！" "？") $c) (not (in (slice "。" "！" "？") $next)) -}}{{- $end = $i -}}{{- end -}}
+  {{- else if in (slice "." "?" "!" "…") $c -}}
+    {{- $after := substr $s (add $i 1) 12 -}}
+    {{- $isP := and (ne $c "…") (eq $next " ") -}}
+    {{- $isQ := or (findRE `^[”’)）」』\]】》"']+ \p{Lu}` $after 1) (and (eq $c "…") (findRE `^ \p{Lu}` $after 1)) -}}
+    {{- if or $isP $isQ -}}
+      {{- $cands = add $cands 1 -}}
+      {{- $candPos = $i -}}
+      {{- $candOK = false -}}
+      {{- if and $isP $depth0 (findRE `^ \p{Lu}` $after 1) -}}
+        {{- $word := replaceRE `^[(\[“‘"'「『（【《]+` "" (substr $s $ws (sub (add $i 1) $ws)) -}}
+        {{- $abbr := or (findRE $abbrRE $word 1) (findRE `^\pL[.?!]$` $word 1) (findRE `\..*[.?!]$` $word 1) -}}
+        {{- if not $abbr -}}{{- $candOK = true -}}{{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- /* 截断点 */ -}}
+  {{- if and $depth0 (lt $i $max) -}}
+    {{- if $zh -}}
+      {{- if eq $c "；" -}}{{- $cut = $i -}}
+      {{- else if and (eq $c "—") (eq $next "—") (ne $prev "—") -}}{{- $cut = $i -}}{{- end -}}
+    {{- else -}}
+      {{- if or (eq $c ";") (eq $c "—") -}}{{- $cut = $i -}}
+      {{- else if and (eq $c "–") (eq $prev " ") (eq $next " ") -}}{{- $cut = $i -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if gt (len $st) 0 -}}{{- $bad = true -}}{{- end -}}
+{{- return dict "bad" $bad "end" $end "cands" $cands "candPos" $candPos "candOK" $candOK "cut" $cut -}}

@@ -1,9 +1,7 @@
 {{- /* 页面描述：返回一个字符串，供 <meta name="description">（meta-description.html）和首页、列表每行的摘要共用。
   用法：partial "page-description.html" (dict "page" 页面 "fallback" 是否在取不到时退回首页描述)。meta 标签传 true；列表摘要传 false，取不到就返回空串、不显示摘要行。
-  可选参数 strip（只给首页和列表摘要用，meta 标签不传，meta 输出不受影响）：为 true 时另求一句列表摘要，求不出就回退为本页的 meta 描述；回退后 meta 去掉同一开头就什么都不剩时返回空串、不显示摘要行。规则详见文件末尾列表摘要一段的注释：
-  去掉导语固定开头（清单在 hugo.toml 的 [params] summary_strip_prefixes；不分大小写；末尾有冒号的项全角或半角冒号都认，冒号及其后空白一并去掉；没有冒号的项后须接空白或正好在文末；只去第一个匹配的开头）；
-  去掉后不含任何字母，或没有冒号的开头后接 that（(?i)^that\b，半句），回退 meta；确实去掉了开头时，英文才在首词全小写且以字母开头时首字母大写；
-  再取完整的第一句（中文到 。！？；英文见下方断句规则），不超过 320 字符（中英相同）就用；超过时在前 320 字符内、括号和引号以外的最后一个分号或破折号处截断加「…」，截完不足上限三分之一或没有截断点就回退 meta。
+  可选参数 strip（只给首页和列表摘要用，meta 标签不传，meta 输出不受影响）：为 true 时返回列表摘要行：有 front matter 的 list_summary 就原样用（list-summary.html），否则按「没把握就不显示」自动求一句，
+  求不出或拿不准时返回空串、不显示摘要行。规则详见文件末尾列表摘要一段的注释；导语固定开头清单在 hugo.toml 的 [params] summary_strip_prefixes。
   以下为 meta 的取值规则：
   中英文各取本语言的 i18n 和正文。取值优先级：
   1. front matter 里的 description；2. i18n 的 meta_desc_<键>：首页 home，404 页 404，其余按路径（/posts/daily → posts_daily，标签页 tags、分类页 categories，依此类推）；
@@ -34,12 +32,7 @@
   {{- end -}}
   {{- if and (not $desc) $fallback -}}{{- $desc = i18n "meta_desc_home" -}}{{- end -}}
 {{- end -}}
-{{- $desc = replaceRE `\[<a[^>]*>(\d+)</a>\]` "[$1]" $desc -}}
-{{- $desc = replaceRE `<a[^>]*>\[?(\d+)\]?</a>` "[$1]" $desc -}}
-{{- $desc = replaceRE `\s*\[\d+\](\s*[、,，]?\s*\[\d+\])*` "" $desc -}}
-{{- $desc = replaceRE `\[([^\]]+)\]\([^)]+\)` "$1" $desc -}}
-{{- $desc = $desc | plainify | htmlUnescape | strings.TrimSpace -}}
-{{- $desc = replaceRE `\s+` " " $desc -}}
+{{- $desc = partial "clean-text.html" $desc -}}
 {{- $clean := $desc -}}
 {{- $limit := cond (eq $p.Language.Lang "zh") 120 200 -}}
 {{- if $fromContent -}}
@@ -61,129 +54,86 @@
     {{- $desc = replaceRE `\s+…$` "…" $desc -}}
   {{- end -}}
 {{- end -}}
-{{- /* 列表摘要（strip 为 true）：在上面已求出的 meta 描述（$desc）之外，另从清洗后、截短前的全文（$clean）求一句；求不出就回退 $desc（meta）。
-  回退后若 meta 去掉同一个开头就什么都不剩，返回空串，列表不显示摘要行。 */ -}}
+{{- /* 列表摘要（strip 为 true）。先看 front matter 的 list_summary（见 list-summary.html，校验不合格时构建失败），有就原样用；
+  没有时从清洗后、截短前的全文（$clean）自动求一句，规则（审查 r4 口径「没把握就不显示」）：
+  1. 去掉导语固定开头（strip-prefix.html）；去掉后不含字母，返回空串；确实去掉了开头时，英文首词全小写且以字母开头才首字母大写。
+  2. 断句（summary-scan.html）：中文到引号和括号外的第一个 。！？；英文只在全段恰好一处候选句界（. ? ! 后接空格的每一处都算，另见 summary-scan.html），
+     且这一处在引号和括号外、空格后是大写字母、句点前的词不是缩写时，才在那里断句；全段没有候选时整段就是第一句；其余情形句界确认不了，返回空串。
+  3. 第一句里引号或括号配对不上，返回空串。
+  4. 第一句不超过 320 字符就用；超过时在前 320 字符内、引号和括号外的最后一个截断点处截断加「…」，截完不少于 107 字符（上限三分之一）才用，否则回退 meta。
+     没有冒号的开头后接 that（(?i)^that\b，半句）也回退 meta。
+  5. 回退 meta 时，meta 必须引号括号配对、且以「…」结尾（明确截短）或正好止于上面确认的句界，否则视为半句，返回空串；meta 去掉同一开头后不含字母，也返回空串。
+  返回空串时列表不显示摘要行；meta 标签不受影响。 */ -}}
 {{- if $strip -}}
-  {{- $zh := eq $p.Language.Lang "zh" -}}
-  {{- $text := $clean -}}
-  {{- $fail := false -}}
-  {{- $stripped := false -}}
-  {{- $mBody := "" -}}
-  {{- $mColon := false -}}
-  {{- range $p.Site.Params.summary_strip_prefixes -}}
-    {{- if not $stripped -}}
-      {{- $hasColon := findRE `[：:]\s*$` . 1 -}}
-      {{- $body := strings.TrimSpace (replaceRE `[：:]\s*$` "" .) -}}
-      {{- $n := strings.RuneCount $body -}}
-      {{- if and $body (ge (strings.RuneCount $text) $n) (eq (lower (substr $text 0 $n)) (lower $body)) -}}
-        {{- $rest := substr $text $n -}}
-        {{- $ok := false -}}
-        {{- if $hasColon -}}
-          {{- if findRE `^\s*[：:]` $rest 1 -}}{{- $rest = replaceRE `^\s*[：:]\s*` "" $rest 1 -}}{{- $ok = true -}}{{- end -}}
-        {{- else if or (not $rest) (findRE `^\s` $rest 1) -}}
-          {{- $rest = strings.TrimLeft " \t\n" $rest -}}{{- $ok = true -}}
-        {{- end -}}
-        {{- if $ok -}}
-          {{- $stripped = true -}}
-          {{- $mBody = $body -}}
-          {{- $mColon = $hasColon -}}
-          {{- if not (findRE `\pL` $rest 1) -}}{{- $fail = true -}}{{- end -}}
-          {{- if and (not $hasColon) (findRE `(?i)^that\b` $rest 1) -}}{{- $fail = true -}}{{- end -}}
-          {{- $text = $rest -}}
-        {{- end -}}
+  {{- $ls := partial "list-summary.html" (dict "page" $p "report" false) -}}
+  {{- if $ls -}}
+    {{- $desc = $ls -}}
+  {{- else if isset $p.Params "list_summary" -}}
+    {{- $desc = "" -}}
+  {{- else -}}
+    {{- $zh := eq $p.Language.Lang "zh" -}}
+    {{- $max := 320 -}}
+    {{- $sp := partial "strip-prefix.html" (dict "text" $clean "site" $p.Site) -}}
+    {{- $rest := $sp.rest -}}
+    {{- $stripped := $sp.stripped -}}
+    {{- $text := $rest -}}
+    {{- /* 只有确实去掉了开头才把英文首字母改成大写；首词含大写（arXiv、iPhone）不改 */ -}}
+    {{- if and $stripped (not $zh) (findRE `^[a-z]` $text 1) (not (findRE `^[a-z][^\s]*[A-Z]` $text 1)) -}}{{- $text = strings.FirstUpper $text -}}{{- end -}}
+    {{- $that := and $stripped (not $sp.colon) (findRE `(?i)^that\b` $rest 1) -}}
+    {{- $first := "" -}}
+    {{- $confirmed := false -}}
+    {{- if findRE `\pL` $text 1 -}}
+      {{- $s1 := partial "summary-scan.html" (dict "text" $text "zh" $zh) -}}
+      {{- if $zh -}}
+        {{- $confirmed = true -}}
+        {{- $first = $text -}}
+        {{- if ge $s1.end 0 -}}{{- $first = substr $text 0 (add $s1.end 1) -}}{{- end -}}
+      {{- else if eq $s1.cands 0 -}}
+        {{- $confirmed = true -}}
+        {{- $first = $text -}}
+      {{- else if and (eq $s1.cands 1) $s1.candOK -}}
+        {{- $confirmed = true -}}
+        {{- $first = substr $text 0 (add $s1.candPos 1) -}}
       {{- end -}}
     {{- end -}}
-  {{- end -}}
-  {{- /* 只有确实去掉了开头才把英文首字母改成大写；首词含大写（arXiv、iPhone）不改 */ -}}
-  {{- if and $stripped (not $zh) (findRE `^[a-z]` $text 1) (not (findRE `^[a-z][^\s]*[A-Z]` $text 1)) -}}{{- $text = strings.FirstUpper $text -}}{{- end -}}
-  {{- if not (findRE `\pL` $text 1) -}}{{- $fail = true -}}{{- end -}}
-  {{- $sum := "" -}}
-  {{- $max := 320 -}}
-  {{- if not $fail -}}
-    {{- /* 第一句 */ -}}
-    {{- $first := $text -}}
-    {{- if $zh -}}
-      {{- with findRE `^.*?[。！？][”’」』）)]*` $text 1 -}}{{- $first = index . 0 -}}{{- end -}}
-    {{- else -}}
-      {{- /* 英文：按空格分词，词尾是 .!?（可带收尾的引号、括号）且下一词以大写字母、数字或开引号开头、或已到文末，才算句末；
-        候选词是常见缩写（U.S.、e.g.、i.e.、et al.、vs.、Dr.、No. 等）时继续往后找；是拿不准的缩写（etc.、Inc.、单个大写字母加点等）就回退 meta。 */ -}}
-      {{- $contRE := `^(?:U\.S\.|U\.K\.|U\.N\.|e\.g\.|i\.e\.|al\.|vs\.|Dr\.|Mr\.|Mrs\.|Ms\.|Prof\.|St\.|No\.|Nos\.|Fig\.|cf\.|Jr\.|Sr\.|approx\.|ca\.)[)\]”’"']*[,;:]?$` -}}
-      {{- $ambRE := `^(?:etc\.|Inc\.|Ltd\.|Co\.|Corp\.|[A-Z]\.)[)\]”’"']*$` -}}
-      {{- $words := split $text " " -}}
-      {{- $acc := slice -}}
-      {{- $done := false -}}
-      {{- range $i, $w := $words -}}
-        {{- if not $done -}}
-          {{- $acc = $acc | append $w -}}
-          {{- $core := replaceRE `^[(\[“‘"']+` "" $w -}}
-          {{- $next := "" -}}
-          {{- if lt (add $i 1) (len $words) -}}{{- $next = index $words (add $i 1) -}}{{- end -}}
-          {{- if findRE $contRE $core 1 -}}
-            {{- if not $next -}}{{- $done = true -}}{{- end -}}
-          {{- else if findRE `[.!?][”’"')\]]*$` $w 1 -}}
-            {{- if not $next -}}
-              {{- $done = true -}}
-            {{- else if findRE `^[A-Z0-9“‘"']` $next 1 -}}
-              {{- $done = true -}}
-              {{- if findRE $ambRE $core 1 -}}{{- $fail = true -}}{{- end -}}
-            {{- end -}}
-          {{- end -}}
-        {{- end -}}
-      {{- end -}}
-      {{- $first = delimit $acc " " -}}
+    {{- $cutAt := -1 -}}
+    {{- if $confirmed -}}
+      {{- $s2 := partial "summary-scan.html" (dict "text" $first "zh" $zh) -}}
+      {{- if or $s2.bad (not (findRE `\pL` $first 1)) -}}{{- $confirmed = false -}}{{- end -}}
+      {{- $cutAt = $s2.cut -}}
     {{- end -}}
-    {{- $first = strings.TrimSpace $first -}}
-    {{- if not (findRE `\pL` $first 1) -}}{{- $fail = true -}}{{- end -}}
-    {{- if $fail -}}
+    {{- $sum := "" -}}
+    {{- $useMeta := false -}}
+    {{- if not $confirmed -}}
+    {{- else if $that -}}
+      {{- $useMeta = true -}}
     {{- else if le (strings.RuneCount $first) $max -}}
       {{- $sum = $first -}}
     {{- else -}}
-      {{- /* 超长：在前 320 字符内、括号和引号以外的最后一个截断点处截断（中文 ； ——，英文 ; — 及两侧有空白的 –），
-        截完不少于上限的三分之一才用，句末加「…」；否则回退 meta。 */ -}}
-      {{- $head := substr $first 0 $max -}}
-      {{- $chars := split $head "" -}}
-      {{- $nc := len $chars -}}
-      {{- $depth := 0 -}}
-      {{- $inQ := false -}}
-      {{- $pos := -1 -}}
-      {{- range $i, $c := $chars -}}
-        {{- if in (slice "(" "（" "[" "“" "「" "『" "【" "《") $c -}}
-          {{- $depth = add $depth 1 -}}
-        {{- else if in (slice ")" "）" "]" "”" "」" "』" "】" "》") $c -}}
-          {{- if gt $depth 0 -}}{{- $depth = sub $depth 1 -}}{{- end -}}
-        {{- else if eq $c "\"" -}}
-          {{- $inQ = not $inQ -}}
-        {{- else if and (eq $depth 0) (not $inQ) -}}
-          {{- if $zh -}}
-            {{- if eq $c "；" -}}
-              {{- $pos = $i -}}
-            {{- else if and (eq $c "—") (lt (add $i 1) $nc) (eq (index $chars (add $i 1)) "—") (or (eq $i 0) (ne (index $chars (sub $i 1)) "—")) -}}
-              {{- $pos = $i -}}
-            {{- end -}}
-          {{- else -}}
-            {{- if or (eq $c ";") (eq $c "—") -}}
-              {{- $pos = $i -}}
-            {{- else if and (eq $c "–") (gt $i 0) (lt (add $i 1) $nc) (eq (index $chars (sub $i 1)) " ") (eq (index $chars (add $i 1)) " ") -}}
-              {{- $pos = $i -}}
-            {{- end -}}
-          {{- end -}}
-        {{- end -}}
-      {{- end -}}
-      {{- if ge $pos 0 -}}
-        {{- $cut := strings.TrimSpace (substr $head 0 $pos) -}}
+      {{- if ge $cutAt 0 -}}
+        {{- $cut := strings.TrimSpace (substr $first 0 $cutAt) -}}
         {{- if and (findRE `\pL` $cut 1) (ge (mul 3 (strings.RuneCount $cut)) $max) -}}{{- $sum = printf "%s…" $cut -}}{{- end -}}
       {{- end -}}
+      {{- if not $sum -}}{{- $useMeta = true -}}{{- end -}}
     {{- end -}}
-  {{- end -}}
-  {{- if $sum -}}
-    {{- $desc = $sum -}}
-  {{- else if $stripped -}}
-    {{- /* 回退 meta：meta 去掉同一个开头后若不含任何字母，就不显示摘要行 */ -}}
-    {{- $n := strings.RuneCount $mBody -}}
-    {{- if and (ge (strings.RuneCount $desc) $n) (eq (lower (substr $desc 0 $n)) (lower $mBody)) -}}
-      {{- $r := substr $desc $n -}}
-      {{- if $mColon -}}{{- $r = replaceRE `^\s*[：:]` "" $r 1 -}}{{- end -}}
-      {{- if not (findRE `\pL` $r 1) -}}{{- $desc = "" -}}{{- end -}}
+    {{- if $sum -}}
+      {{- $desc = $sum -}}
+    {{- else if $useMeta -}}
+      {{- /* 回退 meta：必须配对、且明确截短或正好止于已确认的句界；去掉同一个开头后若不含任何字母，也不显示 */ -}}
+      {{- $cleanFirst := substr $clean 0 (add (sub (strings.RuneCount $clean) (strings.RuneCount $rest)) (strings.RuneCount $first)) -}}
+      {{- $ms := partial "summary-scan.html" (dict "text" $desc "zh" $zh) -}}
+      {{- if or $ms.bad (not (or (hasSuffix $desc "…") (eq $desc $cleanFirst))) -}}
+        {{- $desc = "" -}}
+      {{- else if $stripped -}}
+        {{- $n := strings.RuneCount $sp.body -}}
+        {{- if and (ge (strings.RuneCount $desc) $n) (eq (lower (substr $desc 0 $n)) (lower $sp.body)) -}}
+          {{- $r := substr $desc $n -}}
+          {{- if $sp.colon -}}{{- $r = replaceRE `^\s*[：:]` "" $r 1 -}}{{- end -}}
+          {{- if not (findRE `\pL` $r 1) -}}{{- $desc = "" -}}{{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- else -}}
+      {{- $desc = "" -}}
     {{- end -}}
   {{- end -}}
 {{- end -}}
