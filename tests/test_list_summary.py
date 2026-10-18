@@ -114,9 +114,32 @@ class ListSummaryEdgeCases(_Built):
                      "n16-lower-next"):
             self.assertIn(slug, rows)
             self.assertIsNone(rows[slug], slug)
-        # 唯一的候选不满足 a)/b) 或全段没有候选：n05 没有候选（U.S. 在段末），整段即第一句；n06 小数和版本号里的点后面不是空格
-        self.assertEqual(rows["n05-us-at-end"], "A new chip rule was issued by the U.S.")
+        # 全段没有候选（r5）：空摘要。n05 只有段末的 U.S.，e16 没有句末标点，e09 是去掉开头后只剩 that 的半句
+        for slug in ("n05-us-at-end", "e16-no-terminal", "e09-that-end"):
+            self.assertIn(slug, rows)
+            self.assertIsNone(rows[slug], slug)
+        # n06：小数和版本号里的点后面不是空格，不算候选；全段只有 "before. Next" 一处
         self.assertEqual(rows["n06-decimal-version"], "Hugo v0.139.4 and GPT-3.5 scored 3.5 points higher than before.")
+        # ? 和 ! 只计入候选、不用来断句（p01、p02）；句号后接空格再接小写字母不可断（p03）
+        for slug in ("p01-question", "p02-exclaim", "p03-lower-after-period"):
+            self.assertIn(slug, rows)
+            self.assertIsNone(rows[slug], slug)
+        # 整段引号或括号配对不上：空摘要。首句之后未闭合的 “ ( ‘（p04、p05、p08），首句里孤立的 ) ”（p06、p07）
+        for slug in ("p04-unclosed-quote-after", "p05-unclosed-paren-after", "p06-stray-paren",
+                     "p07-stray-close-quote", "p08-unclosed-single-after"):
+            self.assertIn(slug, rows)
+            self.assertIsNone(rows[slug], slug)
+        # 配对正常的对照：词内撇号不改变引号状态，‘…’ 正常闭合
+        self.assertEqual(rows["p09-apostrophe"], "The lab’s model failed.")
+        self.assertEqual(rows["p10-single-quote-closed"], "A lab said ‘stop’ to its staff.")
+        self.assertEqual(rows["p11-apostrophe-in-single"], "A lab said ‘it’s fine’ to its staff.")
+        # ’ 闭合时最近的开符号不是 ‘（交错）：配对不上，空摘要
+        self.assertIsNone(rows["p12-single-close-mismatch"])
+        # 超长首句没有引号外的截断点、回退 meta，而 meta 截在 “ 引文里：视为半句，空摘要（meta 标签保持原值）
+        m = self.en_meta("p13-meta-cut-in-quote")
+        self.assertIn("“", m)
+        self.assertNotIn("”", m)
+        self.assertIsNone(rows["p13-meta-cut-in-quote"])
         # n17：‘…’ 里的分号不算截断点，超长又没有别的截断点，回退 meta（明确截短、引号配对）；不得以未闭合的 ‘ 结尾
         s = rows["n17-single-quote-semicolon"]
         self.assertEqual(s, self.en_meta("n17-single-quote-semicolon"))
@@ -182,6 +205,11 @@ class ListSummaryEdgeCases(_Built):
         self.assertEqual(rows["y01-inner-question"], "一篇论文问“为什么？”并给出了三条理由。")
         self.assertEqual(rows["y02-inner-period-corner"], "研究人员说「这是第一步。」随后公开了代码。")
         self.assertIsNone(rows["y03-single-quote-dash"])
+        # 中文配对：未闭合的 “ （（q01、q02），孤立的 ” ） 」（q03–q05），首句之后未闭合的 “（q06）：空摘要
+        for slug in ("q01-unclosed-quote", "q02-unclosed-paren", "q03-stray-close-quote", "q04-stray-close-paren",
+                     "q05-stray-corner", "q06-unclosed-after"):
+            self.assertIn(slug, rows)
+            self.assertIsNone(rows[slug], slug)
         self.assertEqual(rows["zh-list-summary"], "研究人员说「这是第一步」，随后公开了代码")
         home = self.rows("index.html")
         self.assertTrue(home)

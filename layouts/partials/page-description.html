@@ -58,8 +58,9 @@
   没有时从清洗后、截短前的全文（$clean）自动求一句，规则（审查 r4 口径「没把握就不显示」）：
   1. 去掉导语固定开头（strip-prefix.html）；去掉后不含字母，返回空串；确实去掉了开头时，英文首词全小写且以字母开头才首字母大写。
   2. 断句（summary-scan.html）：中文到引号和括号外的第一个 。！？；英文只在全段恰好一处候选句界（. ? ! 后接空格的每一处都算，另见 summary-scan.html），
-     且这一处在引号和括号外、空格后是大写字母、句点前的词不是缩写时，才在那里断句；全段没有候选时整段就是第一句；其余情形句界确认不了，返回空串。
-  3. 第一句里引号或括号配对不上，返回空串。
+     且这一处是句点（? 和 ! 只计入候选，不用来断句）、在引号和括号外、空格后是大写字母、句点前的词不是缩写时，才在那里断句；
+     全段没有候选（如没有句末标点，或只有段末一个句点）也返回空串；其余情形句界确认不了，返回空串。
+  3. 整段导语（去掉开头后）里引号或括号配对不上，返回空串（中英都是；第一句截在配对的句界上，因此第一句也必然配对）。
   4. 第一句不超过 320 字符就用；超过时在前 320 字符内、引号和括号外的最后一个截断点处截断加「…」，截完不少于 107 字符（上限三分之一）才用，否则回退 meta。
      没有冒号的开头后接 that（(?i)^that\b，半句）也回退 meta。
   5. 回退 meta 时，meta 必须引号括号配对、且以「…」结尾（明确截短）或正好止于上面确认的句界，否则视为半句，返回空串；meta 去掉同一开头后不含字母，也返回空串。
@@ -88,18 +89,17 @@
         {{- $confirmed = true -}}
         {{- $first = $text -}}
         {{- if ge $s1.end 0 -}}{{- $first = substr $text 0 (add $s1.end 1) -}}{{- end -}}
-      {{- else if eq $s1.cands 0 -}}
-        {{- $confirmed = true -}}
-        {{- $first = $text -}}
       {{- else if and (eq $s1.cands 1) $s1.candOK -}}
         {{- $confirmed = true -}}
         {{- $first = substr $text 0 (add $s1.candPos 1) -}}
       {{- end -}}
+      {{- /* 整段（不只是第一句）引号或括号配对不上，不做自动摘要 */ -}}
+      {{- if $s1.bad -}}{{- $confirmed = false -}}{{- end -}}
     {{- end -}}
     {{- $cutAt := -1 -}}
     {{- if $confirmed -}}
       {{- $s2 := partial "summary-scan.html" (dict "text" $first "zh" $zh) -}}
-      {{- if or $s2.bad (not (findRE `\pL` $first 1)) -}}{{- $confirmed = false -}}{{- end -}}
+      {{- if not (findRE `\pL` $first 1) -}}{{- $confirmed = false -}}{{- end -}}
       {{- $cutAt = $s2.cut -}}
     {{- end -}}
     {{- $sum := "" -}}
