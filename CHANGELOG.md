@@ -2,6 +2,7 @@
 
 ## 2026-10-17
 - P2 周末修订（只改措辞和样式，不改意思）：出处编号显示加方括号（新增 `layouts/_default/_markup/render-link.html`：链接文字只有数字时在外面加 [ ]，其他链接输出不变）；10-12 日报（QA #45 剩余第 3 项）第 1 条背景把四个术语解释并入叙述，相邻编号加分隔；10-14 日报 GPU、子智能体、首字延迟在首次出现处加白话解释，第 3–5 条重复的「信息尚少，暂不做框架判断」合并为解读节开头一句，英文第 5 条改用双引号，X2 署名统一为「Ethan Mollick（@emollick）」；10-15 英文 X1 "Background:" 后改小写；10-16 导语单引号改“”，第 1、2 条术语加白话解释，英文 X1 改小写；10-17 直引号改“”，NeurIPS、末影龙加白话解释，第 3 条第八项任务长句拆句，X1 署名统一。各篇按更正稿惯例加更正说明（2026-10-17）。
+- 站点质检修复（QA #7–#10，PR #64，关闭 #7–#10；只改模板和配置，不动正文）：每页输出中英文描述（新增 `layouts/partials/meta-description.html`：首页、列表、关于、标签、分类和 404 页用 i18n 里各自的描述，日报取导语第一句，超长才截短，出处编号去掉）；首页标题改为「markjin · 每日 AI 与科技要闻，附一手出处和白话解读」/「markjin · Daily AI and tech news, with primary sources and plain-language notes」；新增中英双语 404 页（`layouts/404.html`：说明页面不存在，链回中英首页和每日信号，不进搜索索引）；启用 robots.txt（`hugo.toml` 加 `enableRobotsTXT`，模板 `layouts/robots.txt`：允许收录公开页，附 Sitemap: https://markjin-lab.github.io/sitemap.xml）。
 
 ## 2026-10-12
 - 10-12 日报（审查转达、QA #45）：中英同步——X1 标题改为注明出自 Quanta 帖；第 5 条起飞、降落改为引 SpaceX 任务页 [6]（存档 raw/2026-10-12/spacex-sda-t1tl-a，私有原文含发射时间地点、一级第六次飞行并降落 LZ-4），X 帖作为补充；第 5 条背景精简，@SemperCitiusSDA 说明挪到航天节引文旁，「为什么重要」改写为这批卫星的用途和剩余发射；第 2 条括注拆成单独一句；第 6 条删去重复的「暂不做框架判断」；更正说明同步。关于页未改动。
