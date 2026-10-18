@@ -7,7 +7,8 @@
 {{- $list := site.Data.superseded_corrections -}}
 {{- $siteLangs := slice -}}
 {{- range $.Sites }}{{ $siteLangs = $siteLangs | append .Language.Lang }}{{ end -}}
-{{- $keysAllowed := slice "page" "date" "occurrence" "langs" "kind" -}}
+{{- $keysRequired := slice "page" "date" "occurrence" "langs" "kind" -}}
+{{- $keysAllowed := $keysRequired | append "note_zh" "note_en" -}}
 {{- $seen := slice -}}
 {{- if not $list -}}
   {{- /* 没有清单或清单为空：不做任何标注 */ -}}
@@ -22,9 +23,9 @@
       {{- errorf "%s: 必须是键值表" $at -}}{{- $good = false -}}
     {{- else -}}
       {{- range $k, $_ := $e -}}
-        {{- if not (in $keysAllowed $k) -}}{{- errorf "%s: 未知键 %q（只允许 page、date、occurrence、langs、kind）" $at $k -}}{{- $good = false -}}{{- end -}}
+        {{- if not (in $keysAllowed $k) -}}{{- errorf "%s: 未知键 %q（只允许 page、date、occurrence、langs、kind、note_zh、note_en）" $at $k -}}{{- $good = false -}}{{- end -}}
       {{- end -}}
-      {{- range $keysAllowed -}}
+      {{- range $keysRequired -}}
         {{- if not (isset $e .) -}}{{- errorf "%s: 缺少键 %q" $at . -}}{{- $good = false -}}{{- end -}}
       {{- end -}}
     {{- end -}}
@@ -53,6 +54,14 @@
       {{- if or (ne (printf "%T" $kind) "string") (not (in (slice "full" "partial") $kind)) -}}
         {{- errorf "%s: kind 只能是 full 或 partial（现为 %v）" $at $kind -}}{{- $good = false -}}
       {{- end -}}
+      {{- range slice "note_zh" "note_en" -}}
+        {{- if isset $e . -}}
+          {{- $v := index $e . -}}
+          {{- if or (ne (printf "%T" $v) "string") (eq (strings.TrimSpace $v) "") -}}
+            {{- errorf "%s: %s 必须是非空字符串（现为 %v）" $at . $v -}}{{- $good = false -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
       {{- if or (not (reflect.IsSlice $langs)) (eq (len $langs) 0) -}}
         {{- errorf "%s: langs 必须是非空列表，如 [zh, en]（现为 %v）" $at $langs -}}{{- $good = false -}}
       {{- else -}}
@@ -70,6 +79,9 @@
       {{- if $good -}}
         {{- range $langs -}}
           {{- $lang := . -}}
+          {{- if and (eq $kind "partial") (not (isset $e (printf "note_%s" $lang))) -}}
+            {{- errorf "%s: kind 为 partial，langs 含 %s，但缺少 note_%s" $at $lang $lang -}}{{- $good = false -}}
+          {{- end -}}
           {{- $k := printf "%s|%s|%d|%s" $page $date (int $occ) $lang -}}
           {{- if in $seen $k -}}
             {{- errorf "%s: %s（%s）%s 第 %d 条已在清单中登记过" $at $page $lang $date (int $occ) -}}{{- $good = false -}}

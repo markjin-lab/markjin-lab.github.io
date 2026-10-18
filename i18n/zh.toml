@@ -21,4 +21,3 @@ meta_desc_categories = "markjin 分类目录，目前没有可浏览的分类。
 meta_desc_404 = "页面不存在。返回 markjin 首页，或浏览每日信号。"
 correction_note_sep = ""
 correction_superseded = "（第 {{ .n }} 条；已由下一条更正取代：第 {{ .next }} 条，{{ .date }}）"
-correction_partly_updated = "（部分说明已由下一条更新：第 {{ .next }} 条，{{ .date }}）"

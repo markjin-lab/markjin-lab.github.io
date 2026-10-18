@@ -4,7 +4,7 @@
   只在「更正」/「Corrections」二级标题之后、下一个标题之前找 <p><strong>YYYY-MM-DD</strong>… 条目，
   日期按字面比较，按 occurrence 取该日期的第几条。
     kind: full    —— 整段原样放进 <details>，<summary> 显示日期和“已由下一条更正取代”及下一条的序号、日期；
-    kind: partial —— 不折叠，只在该条加粗日期后插入“部分说明已由下一条更新”及下一条的序号、日期。
+    kind: partial —— 不折叠，只在该条加粗日期后插入清单里当前语言的 note_zh / note_en（HTML 转义）。
   条目文字一字不改；清单校验不通过或本页检查不通过时 errorf（构建失败），并原样返回 .Content，不再索引或替换。
 */ -}}
 {{- $content := .Content -}}
@@ -68,8 +68,8 @@
                 {{- if not $note }}{{ errorf "superseded_corrections: 缺少 %s 语言的 i18n 键 correction_superseded" $lang }}{{ $ok = false }}{{ end -}}
                 {{- $new = printf "<details class=\"correction-superseded\" style=\"margin:1em 0\">\n<summary style=\"cursor:pointer\"><strong>%s</strong>%s<span class=\"correction-note\" style=\"%s\">%s</span></summary>\n%s\n</details>" $t.date $sep $noteStyle $note $p -}}
               {{- else -}}
-                {{- $note := i18n "correction_partly_updated" $args -}}
-                {{- if not $note }}{{ errorf "superseded_corrections: 缺少 %s 语言的 i18n 键 correction_partly_updated" $lang }}{{ $ok = false }}{{ end -}}
+                {{- $note := htmlEscape (index $t (printf "note_%s" $lang) | default "") -}}
+                {{- if not $note }}{{ errorf "superseded_corrections: %s（%s）partial 条目缺少 note_%s" $key $lang $lang }}{{ $ok = false }}{{ end -}}
                 {{- if not (hasPrefix $p $prefix) }}{{ errorf "superseded_corrections: %s（%s）条目开头不是 %s" $key $lang $prefix }}{{ $ok = false }}{{ end -}}
                 {{- $new = printf "%s%s<span class=\"correction-note\" style=\"%s\">%s</span>%s" $prefix $sep $noteStyle $note (strings.TrimPrefix $prefix $p) -}}
               {{- end -}}
