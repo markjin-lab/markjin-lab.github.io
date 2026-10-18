@@ -1,0 +1,11 @@
+{{- /* 清洗一段描述文字（返回字符串）：去掉出处编号（[1]、链接文字为数字的链接，及以空白、顿号或逗号相连的一串编号）、
+  [文字](地址) 形式的 Markdown 行内链接只留文字、去 HTML 标签并还原实体、去首尾空白、合并空白。
+  page-description.html（meta 与列表摘要）和 list-summary.html（list_summary 校验时取导语）共用，保证两处对导语的处理逐字一致。 */ -}}
+{{- $s := . -}}
+{{- $s = replaceRE `\[<a[^>]*>(\d+)</a>\]` "[$1]" $s -}}
+{{- $s = replaceRE `<a[^>]*>\[?(\d+)\]?</a>` "[$1]" $s -}}
+{{- $s = replaceRE `\s*\[\d+\](\s*[、,，]?\s*\[\d+\])*` "" $s -}}
+{{- $s = replaceRE `\[([^\]]+)\]\([^)]+\)` "$1" $s -}}
+{{- $s = $s | plainify | htmlUnescape | strings.TrimSpace -}}
+{{- $s = replaceRE `\s+` " " $s -}}
+{{- return $s -}}
