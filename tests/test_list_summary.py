@@ -35,8 +35,9 @@ def require_hugo():
     raise unittest.SkipTest("hugo not found")
 
 
-def run_build(content_dir, with_data=False):
-    """在临时目录构建；返回 (tmp, out, CompletedProcess)。with_data 为 true 时连同仓库 data/ 一起拷（只给用仓库 content/ 的构建用）。"""
+def run_build(content_dir, with_data=False, hook=None):
+    """在临时目录构建；返回 (tmp, out, CompletedProcess)。with_data 为 true 时连同仓库 data/ 一起拷（只给用仓库 content/ 的构建用）。
+    hook(site) 在构建前对临时站点目录做额外改动（只改临时目录，见 test_citation_edge.py）。"""
     hugo = require_hugo()
     tmp = tempfile.mkdtemp(prefix="summary-site-")
     site = pathlib.Path(tmp) / "site"
@@ -45,6 +46,8 @@ def run_build(content_dir, with_data=False):
     for d in ("layouts", "i18n") + (("data",) if with_data and (ROOT / "data").is_dir() else ()):
         shutil.copytree(ROOT / d, site / d)
     shutil.copytree(content_dir, site / "content")
+    if hook:
+        hook(site)
     out = pathlib.Path(tmp) / "public"
     r = subprocess.run([hugo, "-s", str(site), "-d", str(out)], capture_output=True, text=True)
     return tmp, out, r
@@ -210,12 +213,12 @@ class ListSummaryEdgeCases(_Built):
         self.assertLessEqual(len(self.en_meta("i112-en-360")), 200)
         self.assertLessEqual(len(self.meta("posts/daily/i112-zh-360/index.html")), 120)
 
-    def test_end_cites_simple_rule_and_lead_in(self):
-        # 句末编号（Grok Bot 2026-10-19 08:56 SGT 裁定的最简单规则）：编号后直接是句末标点或段末才删（连同前面的空白，含 U+00A0），其余保留；开头后接数字照常显示
+    def test_end_cites_and_lead_in(self):
+        # 句末编号（#113 对照表定稿）：编号后紧接句末，或只夹闭合符号再接句末，才删（连同前面的空白，含 U+00A0）；开头后接数字照常显示
         en, zh = self.rows("en/posts/daily/index.html"), self.rows("posts/daily/index.html")
-        # 编号后先有闭合引号或括号再接句末标点：按保守规则保留编号（边界写法见 #113）
-        self.assertEqual(en["r2-quote-close"], "The main story today is a lab said “we are done [1]”.")
-        self.assertEqual(zh["r2-zh-paren-close"], "研究指出（结果 [1]）。")
+        # 编号后只夹闭合引号或括号再接句末标点：删编号（对照表 B01、B02）
+        self.assertEqual(en["r2-quote-close"], "The main story today is a lab said “we are done”.")
+        self.assertEqual(zh["r2-zh-paren-close"], "研究指出（结果）。")
         # 编号前是 &nbsp;（U+00A0）
         self.assertEqual(en["r2-nbsp"], "The main story today is a report.")
         self.assertNotIn("\u00a0", en["r2-nbsp"])
@@ -233,46 +236,47 @@ class ListSummaryEdgeCases(_Built):
         self.assertTrue(s.startswith("The main story today is a lab released weights and more weights"), s)
         self.assertTrue(s.endswith("."), s)
 
-    def test_closer_then_period_keeps_cite(self):
-        # 按 08:56 裁定的保守规则：编号后不是直接接句末标点（.!? 还须后接空白或段末）的，一律保留编号
+    def test_closer_then_period(self):
         en, zh = self.rows("en/posts/daily/index.html"), self.rows("posts/daily/index.html")
-        # 反例：foo([1]).bar 里的句点不是句末，编号保留
+        # 反例：foo([1]).bar 里的句点后紧跟字母，不是句末，编号保留（对照表 E01、E02）
         self.assertEqual(en["r3-foo-call"], "The main story today is the call foo([1]).bar returned errors.")
         self.assertEqual(zh["r3-zh-foo-call"], "今天最值得知道的是：调用 foo([1]).bar 返回了错误。")
-        # 编号后先接闭合符号或「…」：保留
-        self.assertEqual(en["r2-quote-close"], "The main story today is a lab said “we are done [1]”.")
-        self.assertEqual(zh["r2-zh-paren-close"], "研究指出（结果 [1]）。")
+        # 编号后只夹闭合符号再接句末：删（B01、B02）
+        self.assertEqual(en["r2-quote-close"], "The main story today is a lab said “we are done”.")
+        self.assertEqual(zh["r2-zh-paren-close"], "研究指出（结果）。")
+        # 编号后夹「…」：保留（09:36 第 2、3 点；F03、F04）
         self.assertEqual(en["r3-ellipsis-period"], "The main story today is a lab released weights [1]….")
         self.assertEqual(zh["r3-zh-ellipsis-keep"], "今天最值得知道的是：研究人员说结果 [1]……然后公开了代码。")
 
-    def test_closer_and_punct_runs_keep_cites(self):
-        # 08:56 裁定（Grok Bot 2026-10-19 08:56 SGT）：编号后先接闭合符号、连续标点或「…」的写法拿不准，一律保留编号（边界写法见 #113）
+    def test_closer_and_punct_runs(self):
+        # 编号后只夹闭合符号、再接 .!? 开头的一串标点（其后可再接闭合符号，然后是空白或段末）：删；夹省略号或其他字符：保留（#113 对照表 B07、J 组）
         en, zh = self.rows("en/posts/daily/index.html"), self.rows("posts/daily/index.html")
-        # 英文：这类写法自动断句按原规则不显示摘要，用 list_summary 验证——带编号的 list_summary 能通过校验，说明导语里的编号保留
-        self.assertEqual(en["r4-en-repro"], "a lab said “it works (as shown [1]).”")
-        self.assertEqual(en["r4-en-period-paren"], "it works (in a test (as shown [1]).)")
+        # 英文：这类写法自动断句不显示摘要，用 list_summary 验证——不带编号的 list_summary 能通过校验，说明导语里的编号已删；带编号的通过，说明编号保留
+        self.assertEqual(en["r4-en-repro"], "a lab said “it works (as shown).”")
+        self.assertEqual(en["r4-en-period-paren"], "it works (in a test (as shown).)")
         self.assertEqual(en["r4-en-dots"], "it works (as shown [1])...")
-        self.assertEqual(en["r4-en-qex"], "it works (as shown [1])?!")
-        self.assertEqual(en["r4-en-straight"], 'a lab said "it works (as shown [1])."')
+        self.assertEqual(en["r4-en-qex"], "it works (as shown)?!")
+        self.assertEqual(en["r4-en-straight"], 'a lab said "it works (as shown)."')
         self.assertEqual(en["r4-en-ellipsis"], "it works (as shown [1])…")
         self.assertEqual(en["r4-en-keep-quote"], "The main story today is the call “foo([1]).”bar returned errors.")
         self.assertEqual(en["r4-en-keep-dots"], "The main story today is the call foo([1])...bar returned errors.")
         self.assertEqual(en["r4-en-keep-qex"], "The main story today is the call foo([1])?!bar returned errors.")
         self.assertEqual(en["r4-en-keep-straight"], 'The main story today is the call "foo([1])."bar returned errors.')
         self.assertEqual(en["r4-en-keep-paren"], "The main story today is the call (foo([1]).)bar returned errors.")
-        self.assertEqual(zh["r4-zh-repro"], "研究指出（结果 [1]）.另一句。")
+        # 中文：. 后紧跟汉字且前面紧挨全角闭合符号才算句末（G01）；.” .) ?! ... 后接汉字都不算，保留
+        self.assertEqual(zh["r4-zh-repro"], "研究指出（结果）.另一句。")
         self.assertEqual(zh["r4-zh-dots"], "今天最值得知道的是：研究指出（结果 [1]）...另一句。")
         self.assertEqual(zh["r4-zh-qex"], "今天最值得知道的是：研究指出（结果 [1]）?!另一句。")
         self.assertEqual(zh["r4-zh-straight"], '今天最值得知道的是："研究指出（结果 [1]）."另一句。')
         self.assertEqual(zh["r4-zh-curly"], "今天最值得知道的是：“研究指出（结果 [1]）.”另一句。")
         self.assertEqual(zh["r4-zh-paren"], "今天最值得知道的是：(研究指出（结果 [1]）.)另一句。")
-        self.assertEqual(zh["r4-zh-corner"], "今天最值得知道的是：「研究指出（结果 [1]）」。")
+        self.assertEqual(zh["r4-zh-corner"], "今天最值得知道的是：「研究指出（结果）」。")
         self.assertEqual(zh["r4-zh-keep-quote"], "今天最值得知道的是：调用 “foo([1]).”bar 返回了错误。")
         self.assertEqual(zh["r4-zh-keep-dots"], "今天最值得知道的是：调用 foo([1])...bar 返回了错误。")
         self.assertEqual(zh["r4-zh-keep-qex"], "今天最值得知道的是：调用 foo([1])?!bar 返回了错误。")
         self.assertEqual(zh["r4-zh-keep-straight"], '今天最值得知道的是：调用 "foo([1])."bar 返回了错误。')
         self.assertEqual(zh["r4-zh-keep-paren"], "今天最值得知道的是：调用 (foo([1]).)bar 返回了错误。")
-        # 编号后直接是 .!? 但后面紧跟字母：也保留（保守）
+        # 编号后直接是 .!? 但后面紧跟字母：保留（E04、E05）
         self.assertEqual(en["r5-dot-letter"], "The main story today is the call foo [1].bar returned errors.")
         self.assertEqual(zh["r5-zh-dot-letter"], "今天最值得知道的是：调用 foo [1].bar 返回了错误。")
 
