@@ -233,6 +233,19 @@ class ListSummaryEdgeCases(_Built):
         self.assertTrue(s.startswith("The main story today is a lab released weights and more weights"), s)
         self.assertTrue(s.endswith("."), s)
 
+    def test_r3_closer_then_period_must_end_sentence(self):
+        # #112 r3：编号后先接闭合符号或「…」、再接 . ! ? 时，标点后面须是空白或段末才算句末、才删编号；中文 。！？ 不受此限
+        en, zh = self.rows("en/posts/daily/index.html"), self.rows("posts/daily/index.html")
+        # 反例：foo([1]).bar 里的句点不是句末，编号保留
+        self.assertEqual(en["r3-foo-call"], "The main story today is the call foo([1]).bar returned errors.")
+        self.assertEqual(zh["r3-zh-foo-call"], "今天最值得知道的是：调用 foo([1]).bar 返回了错误。")
+        # 正例仍然删（r2 用例）
+        self.assertEqual(en["r2-quote-close"], "The main story today is a lab said “we are done”.")
+        self.assertEqual(zh["r2-zh-paren-close"], "研究指出（结果）。")
+        # 「…」：[1]…. 后接空白，删；[1]……然后… 后面不是句末标点，保留
+        self.assertEqual(en["r3-ellipsis-period"], "The main story today is a lab released weights….")
+        self.assertEqual(zh["r3-zh-ellipsis-keep"], "今天最值得知道的是：研究人员说结果 [1]……然后公开了代码。")
+
     def test_list_summary_escaped(self):
         s = (self.out / "en/posts/daily/index.html").read_text(encoding="utf-8")
         self.assertIn("chip bill by 5 &lt; 6 after R&amp;D talks.</p>", s)
