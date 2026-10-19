@@ -1,0 +1,14 @@
+{{- /* 产业链接段和产业数据条目共用：把一段已渲染的文字里的出处编号 [n] 换成本页“[n]: 地址”引用定义指向的链接，输出与 render-link.html 对数字链接文字的写法一致（[<a href="地址">n</a>]）。
+  参数：dict "page" 页面 "text" 文字（HTML）。正文里找不到 [n] 的引用定义时 errorf（构建失败）。只供 shortcodes/industry-*.html 调用。 */ -}}
+{{- $p := .page -}}
+{{- $s := .text -}}
+{{- range uniq (findRE `\[\d+\]` $s) -}}
+  {{- $n := strings.Trim . "[]" -}}
+  {{- $def := findRESubmatch (printf `(?m)^ {0,3}\[%s\]:[ \t]*<?([^\s>]+)>?` $n) $p.RawContent 1 -}}
+  {{- if $def -}}
+    {{- $s = replace $s . (printf `[<a href="%s">%s</a>]` (htmlEscape (index (index $def 0) 1)) $n) -}}
+  {{- else -}}
+    {{- errorf "%s: 出处编号 [%s] 在正文里没有对应的引用定义（[%s]: 地址）" $p.File.Path $n $n -}}
+  {{- end -}}
+{{- end -}}
+{{- return $s -}}

@@ -1,0 +1,36 @@
+{{- /* “产业与经济数据”小节里的一条数据（只能放在 industry-data 里）：只渲染发布值和按公开方法算出的计算值，没有正文，也没有分段或评论走势的参数。
+  用法：{{< industry-datum series="美国……" publisher="……" frequency="monthly" period="2026 年 9 月" value="102.3" unit="" released="2026-10-17" calc="同比" calc_value="1.2%" formula="(102.3/101.1-1)×100=1.2" cite="4" >}}
+  - series、publisher、period、released（YYYY-MM-DD）、value（数字）、cite（出处编号，如 4 或 4,5）必填；unit 可选；
+  - calc、calc_value、formula 可选，三项同给：calc_value 只能是数字（可带 %），formula 只能含数字、运算符、括号、等号和 %；
+  - frequency：daily | weekly | monthly | quarterly | annual。固定附“宽口径，不专指某个具体环节”。 */ -}}
+{{- $p := .Page -}}
+{{- $where := $p.File.Path -}}
+{{- if or (not .Parent) (ne .Parent.Name "industry-data") -}}{{- errorf "%s: industry-datum 只能放在 industry-data 小节里" $where -}}{{- end -}}
+{{- $f := dict -}}
+{{- range slice "series" "publisher" "frequency" "period" "value" "released" "cite" -}}
+  {{- $v := strings.TrimSpace ($.Get . | default "") -}}
+  {{- if not $v -}}{{- errorf "%s: industry-datum 缺少 %s" $where . -}}{{- end -}}
+  {{- $f = merge $f (dict . $v) -}}
+{{- end -}}
+{{- if not (in (slice "daily" "weekly" "monthly" "quarterly" "annual") $f.frequency) -}}{{- errorf "%s: industry-datum 的 frequency 只能是 daily、weekly、monthly、quarterly、annual（现为 %q）" $where $f.frequency -}}{{- end -}}
+{{- if not (findRE `^[-+−]?[0-9][0-9,]*(\.[0-9]+)?$` $f.value) -}}{{- errorf "%s: industry-datum 的 value 必须是数字（现为 %q）" $where $f.value -}}{{- end -}}
+{{- if not (findRE `^\d{4}-\d{2}-\d{2}$` $f.released) -}}{{- errorf "%s: industry-datum 的 released 必须是 YYYY-MM-DD（现为 %q）" $where $f.released -}}{{- end -}}
+{{- if not (findRE `^[1-9][0-9]*(\s*,\s*[1-9][0-9]*)*$` $f.cite) -}}{{- errorf "%s: industry-datum 的 cite 必须是出处编号，如 4 或 4,5（现为 %q）" $where $f.cite -}}{{- end -}}
+{{- $cites := slice -}}
+{{- range split (replaceRE `\s` "" $f.cite) "," -}}{{- $cites = $cites | append (printf "[%s]" .) -}}{{- end -}}
+{{- $unit := strings.TrimSpace (.Get "unit" | default "") -}}
+{{- $value := $f.value -}}{{- with $unit -}}{{- $value = printf "%s %s" $value (htmlEscape .) -}}{{- end -}}
+{{- $sep := i18n "industry_sentence_sep" -}}
+{{- $out := i18n "industry_datum_value" (dict "series" (htmlEscape $f.series) "publisher" (htmlEscape $f.publisher) "frequency" (i18n (printf "industry_frequency_%s" $f.frequency)) "period" (htmlEscape $f.period) "value" $value "released" $f.released "cites" (delimit $cites (i18n "industry_cite_sep"))) -}}
+{{- $calc := strings.TrimSpace (.Get "calc" | default "") -}}
+{{- $cv := strings.TrimSpace (.Get "calc_value" | default "") -}}
+{{- $formula := strings.TrimSpace (.Get "formula" | default "") -}}
+{{- if or $calc $cv $formula -}}
+  {{- if not (and $calc $cv $formula) -}}{{- errorf "%s: industry-datum 的 calc、calc_value、formula 须同时给出" $where -}}{{- end -}}
+  {{- if not (findRE `^[-+−]?[0-9][0-9,]*(\.[0-9]+)?%?$` $cv) -}}{{- errorf "%s: industry-datum 的 calc_value 只能是数字（可带 %%）（现为 %q）" $where $cv -}}{{- end -}}
+  {{- if not (findRE `^[0-9.,\s()+\-−×÷*/=%]+$` $formula) -}}{{- errorf "%s: industry-datum 的 formula 只能含数字、运算符、括号、等号和 %%（现为 %q）" $where $formula -}}{{- end -}}
+  {{- $out = printf "%s%s%s" $out $sep (i18n "industry_datum_calc" (dict "calc" (htmlEscape $calc) "value" $cv "formula" (htmlEscape $formula))) -}}
+{{- end -}}
+{{- $out = printf "%s%s%s" $out $sep (i18n "industry_datum_broad") -}}
+<p class="industry-datum">{{ partial "industry-cites.html" (dict "page" $p "text" $out) | safeHTML }}</p>
+{{- /* 末尾不留换行 */ -}}

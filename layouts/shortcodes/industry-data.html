@@ -1,0 +1,13 @@
+{{- /* 日报小节“产业与经济数据 / Industry and economic data”（路线图 v1.12 第 15.2 节；写法见 docs/industry-section.md）。只在当期有可写的产业数据时用；不用时页面上没有这个小节。
+  用法：{{< industry-data >}}{{< industry-datum … >}}…{{< /industry-data >}}。小节标题取 i18n 的 industry_data_heading。
+  小节里只能放 industry-datum（至少一条），不能写其他文字：除数值字段外不留任何评论的位置；违反时 errorf（构建失败）。 */ -}}
+{{- $where := .Page.File.Path -}}
+{{- $inner := strings.TrimSpace .Inner -}}
+{{- $items := findRE `(?s)<p class="industry-datum">.*?</p>` $inner -}}
+{{- if not $items -}}{{- errorf "%s: industry-data 小节里没有 industry-datum；没有可写的数据时不要用这个小节" $where -}}{{- end -}}
+{{- $rest := strings.TrimSpace (replaceRE `(?s)<p class="industry-datum">.*?</p>` "" $inner) -}}
+{{- if $rest -}}{{- errorf "%s: industry-data 小节里只能放 industry-datum，不能另写文字（多出：%q）" $where $rest -}}{{- end -}}
+{{- $title := i18n "industry_data_heading" -}}
+<h2 id="{{ $title | anchorize }}">{{ $title }}</h2>
+{{ delimit $items "\n" | safeHTML }}
+{{- /* 末尾不留换行 */ -}}
