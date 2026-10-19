@@ -7,7 +7,8 @@ layouts/shortcodes/industry-link.html、industry-data.html、industry-datum.html
 - 参数不合规（端、产业、条目编号、出处、只给 economy 不给对照序列、缺 series_cite、broad 取值、推断带句末标点、小节里另写文字、
   数据条目放在小节外、数值字段写成文字、千分位不规范、日期不存在、引用定义地址不是 HTTP(S)、代码围栏里的伪定义等）时构建失败；
 - 出处标记只在正文文字里替换：<code>、链接文字、标签属性（含引号里的 >）、注释里的方括号和紧跟字母数字的 [n] 原样保留；
-- 引用定义按 CommonMark 逐行认：代码围栏（同符号、长度不短于开栏才闭栏）、HTML 块里和接在段落文字后的“定义”不算。"""
+- 引用定义按 CommonMark 逐行认：代码围栏（同符号、长度不短于开栏才闭栏）、HTML 块里和接在段落文字后的“定义”不算；
+  列表项、引用块里像引用定义的行，以及同一编号的多条定义，一律构建失败。"""
 import html, re, shutil, tomllib, unittest
 from test_list_summary import ROOT, build, run_build
 
@@ -192,6 +193,8 @@ def datum_with(old, new):
 
 L7 = GOOD_LINK.replace("[1]", "[7]")
 NODEF = "出处编号 [7] 在正文里没有对应的引用定义"
+CONT = "引用定义只能写在正文顶层的行首"
+DUP = "出处编号 [7] 有两条以上引用定义"
 CALC = 'cite="1" calc="同比" calc_value="1%" formula="1/1≈1"'
 BAD = {  # 用例名 → (正文片段, 报错里应有的文字[, 页面末尾另加的文字])
     "side": (GOOD_LINK.replace('side="demand"', 'side="up"'), "side 只能是"),
@@ -248,6 +251,18 @@ BAD = {  # 用例名 → (正文片段, 报错里应有的文字[, 页面末尾�
     "def_in_html_comment_block": (L7, NODEF, "\n<!-- note >\n[7]: https://evil.example/fake\n-->\n"),
     "def_in_html_block": (L7, NODEF, "\n<div>\n[7]: https://evil.example/fake\n</div>\n"),
     "def_after_paragraph_text": (L7, NODEF, "\n段落文字\n[7]: https://evil.example/fake\n"),
+    # 从严：列表项、引用块里像引用定义的行一律构建失败；同一编号定义两次以上（不论位置）构建失败
+    "def_in_list_item": (L7, CONT, "\n- [7]: https://example.org/seven\n"),
+    "def_in_ordered_list_item": (L7, CONT, "\n1. [7]: https://example.org/seven\n"),
+    "def_in_list_item_4space_continuation": (L7, CONT, "\n1.  项目\n\n    [7]: https://example.org/seven\n"),
+    "def_in_blockquote": (L7, CONT, "\n> [7]: https://example.org/seven\n"),
+    "def_in_blockquote_list": (L7, CONT, "\n> - [7]: https://example.org/seven\n"),
+    "same_number_in_blockquote_and_outside": (L7, CONT, "\n> [7]: https://evil.example/a\n\n[7]: https://example.org/seven\n"),
+    "same_number_in_list_item_and_outside": (L7, DUP, "\n- 项目\n\n  [7]: https://evil.example/a\n\n[7]: https://example.org/seven\n"),
+    "same_number_after_paragraph_and_outside": (L7, DUP, "\n[7]: https://example.org/seven\n\n段落文字\n[7]: https://evil.example/b\n"),
+    "duplicate_defs": (L7, DUP, "\n[7]: https://example.org/seven\n[7]: https://evil.example/b\n"),
+    "duplicate_defs_apart": (L7, DUP, "\n[7]: https://example.org/seven\n\n## 小标题\n\n[7]: https://example.org/seven\n"),
+    "duplicate_of_base_def": (GOOD_LINK, "出处编号 [1] 有两条以上引用定义", "\n[1]: https://evil.example/one\n"),
 }
 
 
@@ -340,6 +355,15 @@ class InvalidUsageFailsBuild(unittest.TestCase):
         para = link_para(s, 1)
         self.assertIn('<a href="https://example.org/two">[9]</a>', para)
         self.assertEqual(para.count("<a "), 2)
+
+    def test_single_definition_still_works(self):
+        # 正常的单条定义照常使用（含缩进 1–3 个空格的顶层定义、列表结束后另起的定义）
+        for name, tail in {"plain": "\n[7]: https://example.org/seven\n",
+                           "indented_3": "\n   [7]: https://example.org/seven\n",
+                           "after_list": "\n- 项目\n\n[7]: https://example.org/seven\n"}.items():
+            with self.subTest(case=name):
+                s = self.check(L7, None, tail)
+                self.assertIn('[<a href="https://example.org/seven">7</a>]', link_para(s, 1))
 
     def check(self, body, msg, tail="", unsafe=False):
         def hook(site):
