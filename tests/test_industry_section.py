@@ -8,7 +8,7 @@ layouts/shortcodes/industry-link.html、industry-data.html、industry-datum.html
   数据条目放在小节外、数值字段写成文字、千分位不规范、日期不存在、引用定义地址不是 HTTP(S)、代码围栏里的伪定义等）时构建失败；
 - 出处标记只在正文文字里替换：<code>、链接文字、标签属性（含引号里的 >）、注释里的方括号和紧跟字母数字的 [n] 原样保留；
 - 引用定义按 CommonMark 逐行认：代码围栏（同符号、长度不短于开栏才闭栏）、HTML 块里和接在段落文字后的“定义”不算；
-  列表项、引用块里像引用定义的行，以及同一编号的多条定义，一律构建失败。"""
+  列表项、引用块里或行首有空白的像引用定义的行，以及同一编号的多条定义，一律构建失败。"""
 import html, re, shutil, tomllib, unittest
 from test_list_summary import ROOT, build, run_build
 
@@ -255,6 +255,12 @@ BAD = {  # 用例名 → (正文片段, 报错里应有的文字[, 页面末尾�
     "def_in_list_item": (L7, CONT, "\n- [7]: https://example.org/seven\n"),
     "def_in_ordered_list_item": (L7, CONT, "\n1. [7]: https://example.org/seven\n"),
     "def_in_list_item_4space_continuation": (L7, CONT, "\n1.  项目\n\n    [7]: https://example.org/seven\n"),
+    # 行首有任何空白的单条定义（如列表项续行）各自独立触发构建失败，不靠重复定义
+    "single_def_2space_list_continuation": (L7, CONT, "\n- 项目\n\n  [7]: https://example.org/seven\n"),
+    "single_def_3space_list_continuation": (L7, CONT, "\n1. 项目\n\n   [7]: https://example.org/seven\n"),
+    "single_def_1space": (L7, CONT, "\n [7]: https://example.org/seven\n"),
+    "single_def_tab": (L7, CONT, "\n\t[7]: https://example.org/seven\n"),
+    "single_def_blockquote_prefix": (L7, CONT, "\n  >[7]: https://example.org/seven\n"),
     "def_in_blockquote": (L7, CONT, "\n> [7]: https://example.org/seven\n"),
     "def_in_blockquote_list": (L7, CONT, "\n> - [7]: https://example.org/seven\n"),
     "same_number_in_blockquote_and_outside": (L7, CONT, "\n> [7]: https://evil.example/a\n\n[7]: https://example.org/seven\n"),
@@ -357,9 +363,8 @@ class InvalidUsageFailsBuild(unittest.TestCase):
         self.assertEqual(para.count("<a "), 2)
 
     def test_single_definition_still_works(self):
-        # 正常的单条定义照常使用（含缩进 1–3 个空格的顶层定义、列表结束后另起的定义）
+        # 正常的行首（第 0 列）单条定义照常使用（含列表结束后另起的定义）
         for name, tail in {"plain": "\n[7]: https://example.org/seven\n",
-                           "indented_3": "\n   [7]: https://example.org/seven\n",
                            "after_list": "\n- 项目\n\n[7]: https://example.org/seven\n"}.items():
             with self.subTest(case=name):
                 s = self.check(L7, None, tail)
