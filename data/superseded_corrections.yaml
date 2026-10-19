@@ -24,14 +24,14 @@
   note_en: "(The addendum below updates the scope of the opening and the assessment of the post’s ‘eliminating leap seconds’ claim)"
 - page: posts/daily/2026-10-15
   date: "2026-10-19"
-  occurrence: 1          # 中文更正区第 2 条（共 3 条）、英文第 3 条（共 4 条）；下一条（补充）更新导语“一处出处”的写法
+  occurrence: 1          # 中文更正区第 2 条（共 4 条）、英文第 3 条（共 5 条）；下一条（补充）更新导语“一处出处”的写法
   langs: [zh, en]
   kind: partial
   note_zh: "（部分说明已由下一条更正更新）"
   note_en: "(Part of this note has been updated by the next correction)"
 - page: posts/daily/2026-10-16
   date: "2026-10-19"
-  occurrence: 1          # 中文更正区第 3 条（共 4 条）、英文第 4 条（共 5 条）；下一条（补充）更新导语“一处出处”的写法
+  occurrence: 1          # 中文更正区第 3 条（共 5 条）、英文第 4 条（共 6 条）；下一条（补充）更新导语“一处出处”的写法
   langs: [zh, en]
   kind: partial
   note_zh: "（部分说明已由下一条更正更新）"
