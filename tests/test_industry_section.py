@@ -6,7 +6,8 @@ layouts/shortcodes/industry-link.html、industry-data.html、industry-datum.html
 - 同一夹具里不用这些 shortcode 的日报、列表、首页和 feed 都不出现小节标题、产业链接段或推断标注；用仓库 content/ 构建时任何页面都不出现；
 - 参数不合规（端、产业、条目编号、出处、只给 economy 不给对照序列、缺 series_cite、broad 取值、推断带句末标点、小节里另写文字、
   数据条目放在小节外、数值字段写成文字、千分位不规范、日期不存在、引用定义地址不是 HTTP(S)、代码围栏里的伪定义等）时构建失败；
-- 出处标记只在正文文字里替换：<code>、标签属性里的方括号和紧跟字母数字的 [n] 原样保留。"""
+- 出处标记只在正文文字里替换：<code>、链接文字、标签属性（含引号里的 >）、注释里的方括号和紧跟字母数字的 [n] 原样保留；
+- 引用定义按 CommonMark 逐行认：代码围栏（同符号、长度不短于开栏才闭栏）、HTML 块里和接在段落文字后的“定义”不算。"""
 import html, re, shutil, tomllib, unittest
 from test_list_summary import ROOT, build, run_build
 
@@ -189,6 +190,8 @@ def datum_with(old, new):
     return section(GOOD_DATUM.replace(old, new))
 
 
+L7 = GOOD_LINK.replace("[1]", "[7]")
+NODEF = "出处编号 [7] 在正文里没有对应的引用定义"
 CALC = 'cite="1" calc="同比" calc_value="1%" formula="1/1≈1"'
 BAD = {  # 用例名 → (正文片段, 报错里应有的文字[, 页面末尾另加的文字])
     "side": (GOOD_LINK.replace('side="demand"', 'side="up"'), "side 只能是"),
@@ -233,6 +236,18 @@ BAD = {  # 用例名 → (正文片段, 报错里应有的文字[, 页面末尾�
     "relative_url": (GOOD_LINK.replace("[1]", "[7]"), "只能是 http:// 或 https://", "\n[7]: /posts/\n"),
     "def_in_backtick_fence": (GOOD_LINK.replace("[1]", "[7]"), "出处编号 [7] 在正文里没有对应的引用定义", "\n```\n[7]: https://example.org/seven\n```\n"),
     "def_in_tilde_fence": (GOOD_LINK.replace("[1]", "[7]"), "出处编号 [7] 在正文里没有对应的引用定义", "\n~~~text\n[7]: https://example.org/seven\n~~~\n"),
+    # 代码围栏按 CommonMark 逐行判断：同一符号、长度不短于开栏的行才闭栏；围栏里的伪定义不算
+    "def_in_4backtick_fence_after_lone_3": (L7, NODEF, "\n````\n```\n[7]: https://evil.example/fake\n````\n"),
+    "def_in_4tilde_fence_after_backticks": (L7, NODEF, "\n~~~~\n````\n[7]: https://evil.example/fake\n~~~~\n"),
+    "def_in_fence_after_closer_with_info": (L7, NODEF, "\n```\n``` x\n[7]: https://evil.example/fake\n```\n"),
+    "def_in_fence_after_4space_closer": (L7, NODEF, "\n```\n    ```\n[7]: https://evil.example/fake\n```\n"),
+    "def_in_indented_fence": (L7, NODEF, "\n   ```\n[7]: https://evil.example/fake\n   ```\n"),
+    "def_in_unclosed_fence": (L7, NODEF, "\n````\n```\n[7]: https://evil.example/fake\n"),
+    "def_in_list_item_fence": (L7, NODEF, "\n- ```\n  [7]: https://evil.example/fake\n  ```\n"),
+    # HTML 块里的“定义”不算；接在段落文字后面的不是引用定义
+    "def_in_html_comment_block": (L7, NODEF, "\n<!-- note >\n[7]: https://evil.example/fake\n-->\n"),
+    "def_in_html_block": (L7, NODEF, "\n<div>\n[7]: https://evil.example/fake\n</div>\n"),
+    "def_after_paragraph_text": (L7, NODEF, "\n段落文字\n[7]: https://evil.example/fake\n"),
 }
 
 
@@ -285,7 +300,48 @@ class InvalidUsageFailsBuild(unittest.TestCase):
         self.assertIn('[<a href="https://example.org/seven">7</a>]', link_para(s, 1))
         self.assertNotIn('href="https://evil.example', s)
 
-    def check(self, body, msg, tail=""):
+    def test_fence_closers_follow_commonmark(self):
+        # 闭栏行可缩进最多 3 个空格、后面可带空格；闭栏后的真实定义有效，围栏里的伪定义不算
+        cases = {
+            "4backtick": "\n````\n```\n[7]: https://evil.example/fake\n````\n\n[7]: https://example.org/seven\n",
+            "longer_closer_trailing_spaces": "\n```\n[7]: https://evil.example/fake\n   `````   \n[7]: https://example.org/seven\n",
+            "tilde": "\n~~~ text\n[7]: https://evil.example/fake\n~~~\n\n[7]: https://example.org/seven\n",
+            "list_item_fence": "\n- ```\n  [7]: https://evil.example/fake\n  ```\n\n[7]: https://example.org/seven\n",
+            "html_comment": "\n<!-- a > b\n[7]: https://evil.example/fake\n-->\n[7]: https://example.org/seven\n",
+            "inline_backticks_not_fence": "\n```a``` 不是围栏\n\n[7]: https://example.org/seven\n",
+        }
+        for name, tail in cases.items():
+            with self.subTest(case=name):
+                s = self.check(L7, None, tail)
+                self.assertIn('[<a href="https://example.org/seven">7</a>]', link_para(s, 1))
+                self.assertNotIn('href="https://evil.example', s)
+
+    def test_tags_skipped_quote_aware(self):
+        # 原样 HTML（临时站点打开 unsafe）：属性值里的 > 和 [9]、注释里的 > 和 [9] 都不当正文出处；
+        # [9] 有定义时也不能把链接写进属性
+        body = ('来源测的是某个量 [1]，<span title="a > [9]">甲</span><span title=\'b > [9]\'>乙</span>'
+                '<span data-x=[9]>丙</span><!-- c > [9] --><abbr title="d &gt; [9]">丁</abbr>。')
+        for tail in ("", "\n[9]: https://example.org/nine\n"):
+            with self.subTest(defined=bool(tail)):
+                s = self.check('{{< industry-link item="1" industry="ai" side="demand" >}}%s{{< /industry-link >}}' % body, None,
+                               tail, unsafe=True)
+                para = link_para(s, 1)
+                self.assertIn("某个量 %s" % cite(1), para)
+                for frag in ('<span title="a > [9]">甲</span>', "<span title='b > [9]'>乙</span>",
+                             "<span data-x=[9]>丙</span>", "<!-- c > [9] -->", '<abbr title="d &gt; [9]">丁</abbr>'):
+                    self.assertIn(frag, para)
+                self.assertNotIn("example.org/nine", para)
+                self.assertEqual(para.count("<a "), 1)
+
+    def test_link_text_not_relinked(self):
+        # 链接文字里的 [9] 原样保留，不在链接里再套链接
+        s = self.check('{{< industry-link item="1" industry="ai" side="demand" >}}量 [1]，见[\\[9\\]](https://example.org/two)。{{< /industry-link >}}',
+                       None)
+        para = link_para(s, 1)
+        self.assertIn('<a href="https://example.org/two">[9]</a>', para)
+        self.assertEqual(para.count("<a "), 2)
+
+    def check(self, body, msg, tail="", unsafe=False):
         def hook(site):
             d = site / "content" / "posts" / "daily"
             for f in list(d.glob("2026-*.md")):
@@ -294,6 +350,9 @@ class InvalidUsageFailsBuild(unittest.TestCase):
                 "---\ntitle: t\ndate: 2026-10-01T05:00:00+08:00\n---\n导语 [1]。\n\n%s\n\n"
                 "[1]: https://example.org/one\n[2]: https://example.org/two\n%s" % (body, tail),
                 encoding="utf-8")
+            if unsafe:
+                with open(site / "hugo.toml", "a", encoding="utf-8") as f:
+                    f.write("\n[markup.goldmark.renderer]\nunsafe = true\n")
         tmp, out, r = run_build(FX, hook=hook)
         try:
             if msg is None:
