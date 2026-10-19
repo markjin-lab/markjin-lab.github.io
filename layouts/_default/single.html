@@ -1,5 +1,7 @@
-{{ define "main" }}<article><h1>{{ .Title }}</h1>{{ if not .Date.IsZero }}<p class="meta">{{ .Date.Format "2006-01-02" }}</p>{{ end }}{{ partial "superseded-corrections.html" . | safeHTML }}</article>
-{{ if eq .Section "posts" }}<section class="comments" style="margin-top:2.5rem">
+{{ define "main" }}<article><h1>{{ .Title }}</h1>{{ if not .Date.IsZero }}<p class="meta">{{ .Date.Format "2006-01-02" }}{{ if eq .Section "posts" }} · <a href="#comments">{{ i18n "comments_jump" }}</a>{{ end }}</p>{{ end }}{{ partial "superseded-corrections.html" . | safeHTML }}</article>
+{{ if eq .Section "posts" }}<section class="comments" id="comments" style="margin-top:2.5rem">{{/* 评论入口提示（#81）：小标题、邀请语、锚点与日期行短链接共用 eq .Section "posts" 这一开关 */}}
+<h2>{{ i18n "comments_heading" }}</h2>
+<p>{{ i18n "comments_invite" }}</p>
 <div id="giscus-mount" hidden
   data-repo="markjin-lab/markjin-lab.github.io"
   data-repo-id="R_kgDOVE_C8w"
