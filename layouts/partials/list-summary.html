@@ -1,7 +1,7 @@
 {{- /* 手写的列表摘要：front matter 顶层的 list_summary（返回字符串，没有或不合格时返回空串）。参数 dict "page" 页面 "report" 是否报错。
   有 list_summary 时首页和列表原样显示它（模板转义，不截断、不改大小写），没有时才走 page-description.html 的自动断句。
   校验（report 为 true 时用 errorf 让构建失败；meta-description.html 每页调用一次并传 true，列表调用时不重复报错）：
-  1. 必须是非空字符串（去掉首尾空白后不为空）；2. 不超过 320 个字符（Unicode 字符数）；
+  1. 必须是非空字符串（去掉首尾空白后不为空）；2. 不超过 320 个字符（Unicode 字符数）。320 是手写 list_summary 的上限；自动摘要的整句上限是 360（page-description.html，Grok Bot 2026-10-19 07:46 SGT 裁定），两者是不同的值，互不影响；
   3. 必须能在本页正文导语段（第一个 <p>，按 clean-text.html 的 end_cites_only 方式清洗：只去句末出处编号，与自动摘要同一口径）里逐字找到，大小写也必须一致；导语开头的套话不去掉（#109）。
   另有护栏：front matter 里出现 summary 就报错。Hugo 会用它覆盖 .Summary，而内置 RSS 模板的 <description> 用的就是 .Summary，会改变 feed；请改用 list_summary。 */ -}}
 {{- $p := .page -}}

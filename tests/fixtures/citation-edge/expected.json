@@ -1,0 +1,808 @@
+{
+ "_说明": "#113 对照表 A–K、S 组各行在本 PR 实现后的应得（row：首页/列表摘要行，null 为不显示；clean：clean-text.html 句末模式对导语段的清洗结果；meta：meta description，范围外，须与 main 相同），以及 list_summary 候选与校验应得（pass）。",
+ "rows": [
+  {
+   "id": "A01",
+   "lang": "en",
+   "row": "The main story today is a [1] and b [2], plus c data.",
+   "clean": "The main story today is a [1] and b [2], plus c data. Next sentence follows.",
+   "meta": "The main story today is a and b, plus c data."
+  },
+  {
+   "id": "A02",
+   "lang": "zh",
+   "row": "今天最值得知道的是：甲 [1] 和乙 [2]，丙。",
+   "clean": "今天最值得知道的是：甲 [1] 和乙 [2]，丙。另一句。",
+   "meta": "今天最值得知道的是：甲 和乙，丙。"
+  },
+  {
+   "id": "A03",
+   "lang": "en",
+   "row": "The main story today is a report [1] that models improved.",
+   "clean": "The main story today is a report [1] that models improved. Next sentence follows.",
+   "meta": "The main story today is a report that models improved."
+  },
+  {
+   "id": "A04",
+   "lang": "zh",
+   "row": "今天最值得知道的是：研究 [1]、[2] 表明模型变好了。",
+   "clean": "今天最值得知道的是：研究 [1]、[2] 表明模型变好了。另一句。",
+   "meta": "今天最值得知道的是：研究 表明模型变好了。"
+  },
+  {
+   "id": "B01",
+   "lang": "en",
+   "row": "The main story today is a lab said “we are done”.",
+   "clean": "The main story today is a lab said “we are done”. Next sentence follows.",
+   "meta": "The main story today is a lab said “we are done”."
+  },
+  {
+   "id": "B02",
+   "lang": "zh",
+   "row": "研究指出（结果）。",
+   "clean": "研究指出（结果）。另一句。",
+   "meta": "研究指出（结果）。"
+  },
+  {
+   "id": "B03",
+   "lang": "en",
+   "row": "The main story today is a result (as shown).",
+   "clean": "The main story today is a result (as shown). Next sentence follows.",
+   "meta": "The main story today is a result (as shown)."
+  },
+  {
+   "id": "B04",
+   "lang": "en",
+   "row": "The main story today is a lab said “we are done”.",
+   "clean": "The main story today is a lab said “we are done”. Next sentence follows.",
+   "meta": "The main story today is a lab said “we are done”."
+  },
+  {
+   "id": "B05",
+   "lang": "zh",
+   "row": "研究指出（结果）。",
+   "clean": "研究指出（结果）。另一句。",
+   "meta": "研究指出（结果）。"
+  },
+  {
+   "id": "B06",
+   "lang": "zh",
+   "row": "他说「结果（见表）」。",
+   "clean": "他说「结果（见表）」。另一句。",
+   "meta": "他说「结果（见表）」。"
+  },
+  {
+   "id": "B07",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a lab said “it works (as shown).” Then it shipped.",
+   "meta": "The main story today is a lab said “it works (as shown).” Then it shipped."
+  },
+  {
+   "id": "B08",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a lab said “we are done”.",
+   "meta": "The main story today is a lab said “we are done”."
+  },
+  {
+   "id": "C01",
+   "lang": "en",
+   "row": "The main story today is a report.",
+   "clean": "The main story today is a report. Next sentence follows.",
+   "meta": "The main story today is a report ."
+  },
+  {
+   "id": "C02",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告。",
+   "clean": "今天最值得知道的是：一份报告。另一句。",
+   "meta": "今天最值得知道的是：一份报告 。"
+  },
+  {
+   "id": "C03",
+   "lang": "en",
+   "row": "The main story today is a report.",
+   "clean": "The main story today is a report. Next sentence follows.",
+   "meta": "The main story today is a report ."
+  },
+  {
+   "id": "C04",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告。",
+   "clean": "今天最值得知道的是：一份报告。另一句。",
+   "meta": "今天最值得知道的是：一份报告　。"
+  },
+  {
+   "id": "C05",
+   "lang": "en",
+   "row": "The main story today is a report.",
+   "clean": "The main story today is a report. Next sentence follows.",
+   "meta": "The main story today is a report."
+  },
+  {
+   "id": "D01",
+   "lang": "zh",
+   "row": "今天最值得知道的是42。",
+   "clean": "今天最值得知道的是42。另一句。",
+   "meta": "今天最值得知道的是42。"
+  },
+  {
+   "id": "D02",
+   "lang": "en",
+   "row": "The main story today is 42.",
+   "clean": "The main story today is 42. Next sentence follows.",
+   "meta": "The main story today is 42."
+  },
+  {
+   "id": "D03",
+   "lang": "zh",
+   "row": null,
+   "clean": "今天最值得知道的是：。另一句。",
+   "meta": "今天最值得知道的是：。"
+  },
+  {
+   "id": "D04",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is. Next sentence follows.",
+   "meta": "The main story today is."
+  },
+  {
+   "id": "E01",
+   "lang": "en",
+   "row": "The main story today is the call foo([1]).bar returned errors.",
+   "clean": "The main story today is the call foo([1]).bar returned errors. Next sentence follows.",
+   "meta": "The main story today is the call foo().bar returned errors."
+  },
+  {
+   "id": "E02",
+   "lang": "zh",
+   "row": "今天最值得知道的是：调用 foo([1]).bar 返回了错误。",
+   "clean": "今天最值得知道的是：调用 foo([1]).bar 返回了错误。另一句。",
+   "meta": "今天最值得知道的是：调用 foo().bar 返回了错误。"
+  },
+  {
+   "id": "E03",
+   "lang": "zh",
+   "row": "今天最值得知道的是：调用 foo([1]).数据 返回了错误。",
+   "clean": "今天最值得知道的是：调用 foo([1]).数据 返回了错误。另一句。",
+   "meta": "今天最值得知道的是：调用 foo().数据 返回了错误。"
+  },
+  {
+   "id": "E04",
+   "lang": "en",
+   "row": "The main story today is the call foo [1].bar returned errors.",
+   "clean": "The main story today is the call foo [1].bar returned errors. Next sentence follows.",
+   "meta": "The main story today is the call foo.bar returned errors."
+  },
+  {
+   "id": "E05",
+   "lang": "zh",
+   "row": "今天最值得知道的是：调用 foo [1].bar 返回了错误。",
+   "clean": "今天最值得知道的是：调用 foo [1].bar 返回了错误。另一句。",
+   "meta": "今天最值得知道的是：调用 foo.bar 返回了错误。"
+  },
+  {
+   "id": "E06",
+   "lang": "en",
+   "row": "The main story today is the call foo([1]).",
+   "clean": "The main story today is the call foo([1]). Next sentence follows.",
+   "meta": "The main story today is the call foo()."
+  },
+  {
+   "id": "E07",
+   "lang": "zh",
+   "row": "今天最值得知道的是：调用 foo([1])。",
+   "clean": "今天最值得知道的是：调用 foo([1])。另一句。",
+   "meta": "今天最值得知道的是：调用 foo()。"
+  },
+  {
+   "id": "F01",
+   "lang": "zh",
+   "row": "今天最值得知道的是：结果 [1]… Python 用户增加了。",
+   "clean": "今天最值得知道的是：结果 [1]… Python 用户增加了。另一句。",
+   "meta": "今天最值得知道的是：结果… Python 用户增加了。"
+  },
+  {
+   "id": "F02",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is the models [1]… OpenAI said more. Next sentence follows.",
+   "meta": "The main story today is the models… OpenAI said more."
+  },
+  {
+   "id": "F03",
+   "lang": "en",
+   "row": "The main story today is it ended [1]….",
+   "clean": "The main story today is it ended [1]…. Next sentence follows.",
+   "meta": "The main story today is it ended…."
+  },
+  {
+   "id": "F04",
+   "lang": "zh",
+   "row": "今天最值得知道的是：结果 [1]……然后…另一句。",
+   "clean": "今天最值得知道的是：结果 [1]……然后…另一句。",
+   "meta": "今天最值得知道的是：结果……然后…另一句。"
+  },
+  {
+   "id": "F05",
+   "lang": "zh",
+   "row": "今天最值得知道的是：结果 [1]…。",
+   "clean": "今天最值得知道的是：结果 [1]…。另一句。",
+   "meta": "今天最值得知道的是：结果…。"
+  },
+  {
+   "id": "F06",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is it ended [1]…",
+   "meta": "The main story today is it ended…"
+  },
+  {
+   "id": "G01",
+   "lang": "zh",
+   "row": "研究指出（结果）.另一句。",
+   "clean": "研究指出（结果）.另一句。",
+   "meta": "研究指出（结果）.另一句。"
+  },
+  {
+   "id": "G02",
+   "lang": "zh",
+   "row": "今天最值得知道的是：结果 [1].另一句。",
+   "clean": "今天最值得知道的是：结果 [1].另一句。",
+   "meta": "今天最值得知道的是：结果.另一句。"
+  },
+  {
+   "id": "G03",
+   "lang": "zh",
+   "row": "今天最值得知道的是：他说「好」.另一句。",
+   "clean": "今天最值得知道的是：他说「好」.另一句。",
+   "meta": "今天最值得知道的是：他说「好」.另一句。"
+  },
+  {
+   "id": "G04",
+   "lang": "zh",
+   "row": "今天最值得知道的是：他说“好 [1]”.另一句。",
+   "clean": "今天最值得知道的是：他说“好 [1]”.另一句。",
+   "meta": "今天最值得知道的是：他说“好”.另一句。"
+  },
+  {
+   "id": "H01",
+   "lang": "en",
+   "row": "The main story today is a report.",
+   "clean": "The main story today is a report. Next sentence follows.",
+   "meta": "The main story today is a report."
+  },
+  {
+   "id": "H02",
+   "lang": "en",
+   "row": "The main story today is a report.",
+   "clean": "The main story today is a report. Next sentence follows.",
+   "meta": "The main story today is a report."
+  },
+  {
+   "id": "H03",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告。",
+   "clean": "今天最值得知道的是：一份报告。另一句。",
+   "meta": "今天最值得知道的是：一份报告。"
+  },
+  {
+   "id": "H04",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告。",
+   "clean": "今天最值得知道的是：一份报告。另一句。",
+   "meta": "今天最值得知道的是：一份报告。"
+  },
+  {
+   "id": "H05",
+   "lang": "en",
+   "row": "The main story today is a report.",
+   "clean": "The main story today is a report. Next sentence follows.",
+   "meta": "The main story today is a report."
+  },
+  {
+   "id": "I01",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告",
+   "clean": "今天最值得知道的是：一份报告",
+   "meta": "今天最值得知道的是：一份报告"
+  },
+  {
+   "id": "I02",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a report",
+   "meta": "The main story today is a report"
+  },
+  {
+   "id": "I03",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a report.",
+   "meta": "The main story today is a report."
+  },
+  {
+   "id": "I04",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告。",
+   "clean": "今天最值得知道的是：一份报告。",
+   "meta": "今天最值得知道的是：一份报告。"
+  },
+  {
+   "id": "J01",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is it ended [1]… Next sentence follows.",
+   "meta": "The main story today is it ended… Next sentence follows."
+  },
+  {
+   "id": "J02",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is was it real?! Next sentence follows.",
+   "meta": "The main story today is was it real?!"
+  },
+  {
+   "id": "J03",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a lab said “we are done.” Next sentence follows.",
+   "meta": "The main story today is a lab said “we are done.” Next sentence follows."
+  },
+  {
+   "id": "J04",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a lab said “we are done.” Next sentence follows.",
+   "meta": "The main story today is a lab said “we are done.” Next sentence follows."
+  },
+  {
+   "id": "J05",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a note (see.) Next sentence follows.",
+   "meta": "The main story today is a note (see.) Next sentence follows."
+  },
+  {
+   "id": "J06",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is the call foo([1]).”bar returned errors. Next sentence follows.",
+   "meta": "The main story today is the call foo().”bar returned errors."
+  },
+  {
+   "id": "J07",
+   "lang": "zh",
+   "row": "今天最值得知道的是：研究指出（结果 [1]）.Next 另一句。",
+   "clean": "今天最值得知道的是：研究指出（结果 [1]）.Next 另一句。",
+   "meta": "今天最值得知道的是：研究指出（结果）.Next 另一句。"
+  },
+  {
+   "id": "J08",
+   "lang": "en",
+   "row": "The main story today is a lab said (as shown [1]).“Next” follows.",
+   "clean": "The main story today is a lab said (as shown [1]).“Next” follows. Next sentence follows.",
+   "meta": "The main story today is a lab said (as shown).“Next” follows."
+  },
+  {
+   "id": "K01",
+   "lang": "en",
+   "row": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio; it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budgetss tools.",
+   "clean": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio; it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budgetss tools. Next sentence follows.",
+   "meta": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…"
+  },
+  {
+   "id": "K02",
+   "lang": "en",
+   "row": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio…",
+   "clean": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio; it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budgets a tools. Next sentence follows.",
+   "meta": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…"
+  },
+  {
+   "id": "K03",
+   "lang": "en",
+   "row": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…",
+   "clean": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio, it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budgets a tools. Next sentence follows.",
+   "meta": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…"
+  },
+  {
+   "id": "K04",
+   "lang": "en",
+   "row": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio; it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budgetss tools.",
+   "clean": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio; it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budgetss tools. Next sentence follows.",
+   "meta": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…"
+  },
+  {
+   "id": "K05",
+   "lang": "en",
+   "row": "The main story today is a survey [1] of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio…",
+   "clean": "The main story today is a survey [1] of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio; it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budget tools. Next sentence follows.",
+   "meta": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…"
+  },
+  {
+   "id": "K06",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况；并列出每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以工具。",
+   "clean": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况；并列出每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以工具。另一句。",
+   "meta": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况…"
+  },
+  {
+   "id": "K07",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况…",
+   "clean": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况；并列出每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及工具。另一句。",
+   "meta": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况…"
+  },
+  {
+   "id": "K08",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况…",
+   "clean": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，并列出每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及工具。另一句。",
+   "meta": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况…"
+  },
+  {
+   "id": "K09",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况；并列出每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以工具。",
+   "clean": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况；并列出每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以工具。另一句。",
+   "meta": "今天最值得知道的是：一项调查梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况…"
+  },
+  {
+   "id": "K10",
+   "lang": "en",
+   "row": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…",
+   "clean": "The main story today is a survey [1] of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio, it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budge tools. Next sentence follows.",
+   "meta": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…"
+  },
+  {
+   "id": "K11",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一项调查 梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况…",
+   "clean": "今天最值得知道的是：一项调查 [1] 梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，并列出每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预算，以及每个实验室的人员和预工具。另一句。",
+   "meta": "今天最值得知道的是：一项调查 梳理了各地机器人实验室在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况，在各个地区的分布情况…"
+  },
+  {
+   "id": "K12",
+   "lang": "en",
+   "row": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio [1]…",
+   "clean": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regio [1]; it also lists budgets and staff for each lab, along with budgets and staff for each lab, along with budgets and staff for each lab, along with budgets a tools. Next sentence follows.",
+   "meta": "The main story today is a survey of robot labs in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many regions, with notes in many…"
+  },
+  {
+   "id": "B09",
+   "lang": "zh",
+   "row": "研究指出（[1]、[2]）。",
+   "clean": "研究指出（[1]、[2]）。另一句。",
+   "meta": "研究指出（）。"
+  },
+  {
+   "id": "B10",
+   "lang": "en",
+   "row": "The main story today is a lab said “[1]”.",
+   "clean": "The main story today is a lab said “[1]”. Next sentence follows.",
+   "meta": "The main story today is a lab said “”."
+  },
+  {
+   "id": "B11",
+   "lang": "zh",
+   "row": "他说「[1]」。",
+   "clean": "他说「[1]」。另一句。",
+   "meta": "他说「」。"
+  },
+  {
+   "id": "B12",
+   "lang": "zh",
+   "row": "今天最值得知道的是：见《[1]》。",
+   "clean": "今天最值得知道的是：见《[1]》。另一句。",
+   "meta": "今天最值得知道的是：见《》。"
+  },
+  {
+   "id": "B13",
+   "lang": "zh",
+   "row": "今天最值得知道的是：见【[1]】。",
+   "clean": "今天最值得知道的是：见【[1]】。另一句。",
+   "meta": "今天最值得知道的是：见【】。"
+  },
+  {
+   "id": "B14",
+   "lang": "zh",
+   "row": "他说『[1]』。",
+   "clean": "他说『[1]』。另一句。",
+   "meta": "他说『』。"
+  },
+  {
+   "id": "B15",
+   "lang": "zh",
+   "row": "研究指出（「[1]」）。",
+   "clean": "研究指出（「[1]」）。另一句。",
+   "meta": "研究指出（「」）。"
+  },
+  {
+   "id": "B16",
+   "lang": "en",
+   "row": "The main story today is a lab said “[1]”.",
+   "clean": "The main story today is a lab said “[1]”. Next sentence follows.",
+   "meta": "The main story today is a lab said “”."
+  },
+  {
+   "id": "B17",
+   "lang": "en",
+   "row": "The main story today is a note ([1]).",
+   "clean": "The main story today is a note ([1]). Next sentence follows.",
+   "meta": "The main story today is a note ()."
+  },
+  {
+   "id": "B18",
+   "lang": "en",
+   "row": "The main story today is a note [[1]].",
+   "clean": "The main story today is a note [[1]]. Next sentence follows.",
+   "meta": "The main story today is a note []."
+  },
+  {
+   "id": "B19",
+   "lang": "en",
+   "row": "The main story today is a lab said ‘[1]’.",
+   "clean": "The main story today is a lab said ‘[1]’. Next sentence follows.",
+   "meta": "The main story today is a lab said ‘’."
+  },
+  {
+   "id": "B20",
+   "lang": "zh",
+   "row": "研究指出（ [1] ）。",
+   "clean": "研究指出（ [1] ）。另一句。",
+   "meta": "研究指出（ ）。"
+  },
+  {
+   "id": "B21",
+   "lang": "zh",
+   "row": "他说“[1]”。",
+   "clean": "他说“[1]”。另一句。",
+   "meta": "他说“”。"
+  },
+  {
+   "id": "B22",
+   "lang": "zh",
+   "row": "研究指出（[1]）.另一句。",
+   "clean": "研究指出（[1]）.另一句。",
+   "meta": "研究指出（）.另一句。"
+  },
+  {
+   "id": "B23",
+   "lang": "zh",
+   "row": "研究指出（结果 [1] ）。",
+   "clean": "研究指出（结果 [1] ）。另一句。",
+   "meta": "研究指出（结果 ）。"
+  },
+  {
+   "id": "B24",
+   "lang": "en",
+   "row": "The main story today is a lab said “we are done [1] ”.",
+   "clean": "The main story today is a lab said “we are done [1] ”. Next sentence follows.",
+   "meta": "The main story today is a lab said “we are done ”."
+  },
+  {
+   "id": "S01",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告 [1] 。",
+   "clean": "今天最值得知道的是：一份报告 [1] 。另一句。",
+   "meta": "今天最值得知道的是：一份报告 。"
+  },
+  {
+   "id": "S02",
+   "lang": "en",
+   "row": "The main story today is a report [1] .",
+   "clean": "The main story today is a report [1] . Next sentence follows.",
+   "meta": "The main story today is a report ."
+  },
+  {
+   "id": "S03",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告 [1] 。",
+   "clean": "今天最值得知道的是：一份报告 [1] 。另一句。",
+   "meta": "今天最值得知道的是：一份报告 。"
+  },
+  {
+   "id": "S04",
+   "lang": "en",
+   "row": "The main story today is a report [1] .",
+   "clean": "The main story today is a report [1] . Next sentence follows.",
+   "meta": "The main story today is a report ."
+  },
+  {
+   "id": "S05",
+   "lang": "en",
+   "row": "The main story today is a report [1] .",
+   "clean": "The main story today is a report [1] . Next sentence follows.",
+   "meta": "The main story today is a report ."
+  },
+  {
+   "id": "S06",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告 [1]　。",
+   "clean": "今天最值得知道的是：一份报告 [1]　。另一句。",
+   "meta": "今天最值得知道的是：一份报告　。"
+  },
+  {
+   "id": "S07",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is was it real [1] ? Next sentence follows.",
+   "meta": "The main story today is was it real ?"
+  },
+  {
+   "id": "S08",
+   "lang": "zh",
+   "row": "今天最值得知道的是：真的吗 [1] ！",
+   "clean": "今天最值得知道的是：真的吗 [1] ！另一句。",
+   "meta": "今天最值得知道的是：真的吗 ！"
+  },
+  {
+   "id": "S09",
+   "lang": "en",
+   "row": "The main story today is a report [1].",
+   "clean": "The main story today is a report [1]. Next sentence follows.",
+   "meta": "The main story today is a report."
+  },
+  {
+   "id": "S10",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告 [1]、[2] 。",
+   "clean": "今天最值得知道的是：一份报告 [1]、[2] 。另一句。",
+   "meta": "今天最值得知道的是：一份报告 。"
+  },
+  {
+   "id": "S11",
+   "lang": "zh",
+   "row": "今天最值得知道的是：一份报告。",
+   "clean": "今天最值得知道的是：一份报告。 另一句。",
+   "meta": "今天最值得知道的是：一份报告。"
+  },
+  {
+   "id": "S12",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a report. Next sentence follows.",
+   "meta": "The main story today is a report. Next sentence follows."
+  },
+  {
+   "id": "S13",
+   "lang": "en",
+   "row": null,
+   "clean": "The main story today is a report.　Next sentence follows.",
+   "meta": "The main story today is a report.　Next sentence follows."
+  },
+  {
+   "id": "B25",
+   "lang": "zh",
+   "row": "研究指出（见「[1]」摘要）。",
+   "clean": "研究指出（见「[1]」摘要）。另一句。",
+   "meta": "研究指出（见「」摘要）。"
+  },
+  {
+   "id": "B26",
+   "lang": "en",
+   "row": "The main story today is a note on the authors’.",
+   "clean": "The main story today is a note on the authors’. Next sentence follows.",
+   "meta": "The main story today is a note on the authors’."
+  },
+  {
+   "id": "B27",
+   "lang": "en",
+   "row": "The main story today is a note (see ‘[1]’ above).",
+   "clean": "The main story today is a note (see ‘[1]’ above). Next sentence follows.",
+   "meta": "The main story today is a note (see ‘’ above)."
+  },
+  {
+   "id": "G05",
+   "lang": "zh",
+   "row": "今天最值得知道的是：他说‘好 [1]’.另一句。",
+   "clean": "今天最值得知道的是：他说‘好 [1]’.另一句。",
+   "meta": "今天最值得知道的是：他说‘好’.另一句。"
+  },
+  {
+   "id": "G06",
+   "lang": "zh",
+   "row": "今天最值得知道的是：他说『好』.另一句。",
+   "clean": "今天最值得知道的是：他说『好』.另一句。",
+   "meta": "今天最值得知道的是：他说『好』.另一句。"
+  },
+  {
+   "id": "G07",
+   "lang": "zh",
+   "row": "今天最值得知道的是：见【表】.另一句。",
+   "clean": "今天最值得知道的是：见【表】.另一句。",
+   "meta": "今天最值得知道的是：见【表】.另一句。"
+  },
+  {
+   "id": "G08",
+   "lang": "zh",
+   "row": "今天最值得知道的是：见《书》.另一句。",
+   "clean": "今天最值得知道的是：见《书》.另一句。",
+   "meta": "今天最值得知道的是：见《书》.另一句。"
+  }
+ ],
+ "list_summary": [
+  {
+   "id": "B07",
+   "list_summary": "a lab said “it works (as shown).”",
+   "pass": true
+  },
+  {
+   "id": "B08",
+   "list_summary": "a lab said “we are done”.",
+   "pass": true
+  },
+  {
+   "id": "F02",
+   "list_summary": "the models… OpenAI said more.",
+   "pass": false
+  },
+  {
+   "id": "F06",
+   "list_summary": "it ended…",
+   "pass": false
+  },
+  {
+   "id": "I02",
+   "list_summary": "The main story today is a report",
+   "pass": true
+  },
+  {
+   "id": "I03",
+   "list_summary": "The main story today is a report.",
+   "pass": true
+  },
+  {
+   "id": "J01",
+   "list_summary": "it ended… Next sentence follows.",
+   "pass": false
+  },
+  {
+   "id": "J02",
+   "list_summary": "was it real?!",
+   "pass": true
+  },
+  {
+   "id": "J03",
+   "list_summary": "a lab said “we are done.”",
+   "pass": true
+  },
+  {
+   "id": "J04",
+   "list_summary": "a lab said “we are done.”",
+   "pass": true
+  },
+  {
+   "id": "J05",
+   "list_summary": "a note (see.)",
+   "pass": true
+  },
+  {
+   "id": "D04",
+   "list_summary": "The main story today is.",
+   "pass": true
+  },
+  {
+   "id": "J06",
+   "list_summary": "The main story today is the call foo().”bar returned errors.",
+   "pass": false
+  },
+  {
+   "id": "S07",
+   "list_summary": "was it real ?",
+   "pass": false
+  },
+  {
+   "id": "S12",
+   "list_summary": "The main story today is a report.",
+   "pass": true
+  },
+  {
+   "id": "S13",
+   "list_summary": "The main story today is a report.",
+   "pass": true
+  }
+ ]
+}
