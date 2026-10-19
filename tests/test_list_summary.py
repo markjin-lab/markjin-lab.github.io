@@ -246,6 +246,45 @@ class ListSummaryEdgeCases(_Built):
         self.assertEqual(en["r3-ellipsis-period"], "The main story today is a lab released weights….")
         self.assertEqual(zh["r3-zh-ellipsis-keep"], "今天最值得知道的是：研究人员说结果 [1]……然后公开了代码。")
 
+    def test_r4_period_then_closers_or_punct(self):
+        # #112 r4（Grok Bot 2026-10-19 08:35 SGT 特批）：编号后先有闭合符号，再接 .!? 和连续标点、多层闭合符号，
+        # 一直通到空白、段末、CJK 文字或 CJK 开符号时是句末，删编号；.!? 串后直接跟拉丁字母或数字不是句末，编号保留
+        en, zh = self.rows("en/posts/daily/index.html"), self.rows("posts/daily/index.html")
+        # 英文正例：这类句末后面是「”/) + 空格 + 大写」，自动断句按原规则不显示，改用不带编号的 list_summary 验证：
+        # 构建通过（setUpClass）即说明 list_summary 校验时导语里的编号已删，摘要行原样显示 list_summary
+        self.assertEqual(en["r4-en-repro"], "a lab said “it works (as shown).”")          # (as shown [1]).” Then
+        self.assertEqual(en["r4-en-period-paren"], "it works (in a test (as shown).)")    # .)，多层 ).)
+        self.assertEqual(en["r4-en-dots"], "it works (as shown)...")                     # ...
+        self.assertEqual(en["r4-en-qex"], "it works (as shown)?!")                       # ?!
+        self.assertEqual(en["r4-en-straight"], 'a lab said "it works (as shown)."')       # ."
+        self.assertEqual(en["r4-en-ellipsis"], "it works (as shown)…")                   # 排版后的 … 后接空格和大写
+        # 英文反例：.!? 串后直接跟拉丁字母，编号保留
+        self.assertEqual(en["r4-en-keep-quote"], "The main story today is the call “foo([1]).”bar returned errors.")
+        self.assertEqual(en["r4-en-keep-dots"], "The main story today is the call foo([1])...bar returned errors.")
+        self.assertEqual(en["r4-en-keep-qex"], "The main story today is the call foo([1])?!bar returned errors.")
+        self.assertEqual(en["r4-en-keep-straight"], 'The main story today is the call "foo([1])."bar returned errors.')
+        self.assertEqual(en["r4-en-keep-paren"], "The main story today is the call (foo([1]).)bar returned errors.")
+        # 中文正例：句点后紧跟汉字也算句界；多层闭合符号 ）.”、）」。
+        self.assertEqual(zh["r4-zh-repro"], "研究指出（结果）.另一句。")
+        self.assertEqual(zh["r4-zh-dots"], "今天最值得知道的是：研究指出（结果）...另一句。")
+        self.assertEqual(zh["r4-zh-qex"], "今天最值得知道的是：研究指出（结果）?!另一句。")
+        self.assertEqual(zh["r4-zh-straight"], '今天最值得知道的是："研究指出（结果）."另一句。')
+        self.assertEqual(zh["r4-zh-curly"], "今天最值得知道的是：“研究指出（结果）.”另一句。")
+        self.assertEqual(zh["r4-zh-paren"], "今天最值得知道的是：(研究指出（结果）.)另一句。")
+        self.assertEqual(zh["r4-zh-corner"], "今天最值得知道的是：「研究指出（结果）」。")
+        for slug in ("r4-zh-repro", "r4-zh-dots", "r4-zh-qex", "r4-zh-straight", "r4-zh-curly", "r4-zh-paren", "r4-zh-corner"):
+            self.assertNotIn("[1]", zh[slug], slug)
+        # 中文反例
+        self.assertEqual(zh["r4-zh-keep-quote"], "今天最值得知道的是：调用 “foo([1]).”bar 返回了错误。")
+        self.assertEqual(zh["r4-zh-keep-dots"], "今天最值得知道的是：调用 foo([1])...bar 返回了错误。")
+        self.assertEqual(zh["r4-zh-keep-qex"], "今天最值得知道的是：调用 foo([1])?!bar 返回了错误。")
+        self.assertEqual(zh["r4-zh-keep-straight"], '今天最值得知道的是：调用 "foo([1])."bar 返回了错误。')
+        self.assertEqual(zh["r4-zh-keep-paren"], "今天最值得知道的是：调用 (foo([1]).)bar 返回了错误。")
+        # r3 反例与「…」用例不回归
+        self.assertEqual(en["r3-foo-call"], "The main story today is the call foo([1]).bar returned errors.")
+        self.assertEqual(zh["r3-zh-foo-call"], "今天最值得知道的是：调用 foo([1]).bar 返回了错误。")
+        self.assertEqual(zh["r3-zh-ellipsis-keep"], "今天最值得知道的是：研究人员说结果 [1]……然后公开了代码。")
+
     def test_list_summary_escaped(self):
         s = (self.out / "en/posts/daily/index.html").read_text(encoding="utf-8")
         self.assertIn("chip bill by 5 &lt; 6 after R&amp;D talks.</p>", s)
@@ -350,7 +389,7 @@ class ListSummaryFieldIsolation(unittest.TestCase):
             shutil.rmtree(d, ignore_errors=True)
 
     def test_only_summary_rows_differ(self):
-        self.assertEqual(len(self.changed), 5)
+        self.assertEqual(len(self.changed), 11)
         files_a = sorted(p.relative_to(self.out_a).as_posix() for p in self.out_a.rglob("*") if p.is_file())
         files_b = sorted(p.relative_to(self.out_b).as_posix() for p in self.out_b.rglob("*") if p.is_file())
         self.assertEqual(files_a, files_b)
