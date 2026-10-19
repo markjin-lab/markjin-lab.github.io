@@ -210,6 +210,29 @@ class ListSummaryEdgeCases(_Built):
         self.assertLessEqual(len(self.en_meta("i112-en-360")), 200)
         self.assertLessEqual(len(self.meta("posts/daily/i112-zh-360/index.html")), 120)
 
+    def test_r2_end_cites_and_lead_in(self):
+        # #112 r2：句末编号的各种写法都删掉（连同前面的空白，含 U+00A0），句中编号保留；开头后面有数字就不算只剩开头套话
+        en, zh = self.rows("en/posts/daily/index.html"), self.rows("posts/daily/index.html")
+        # 第 1 条：编号后先有闭合引号或括号，再接句末标点
+        self.assertEqual(en["r2-quote-close"], "The main story today is a lab said “we are done”.")
+        self.assertEqual(zh["r2-zh-paren-close"], "研究指出（结果）。")
+        # 第 2 条：编号前是 &nbsp;（U+00A0）
+        self.assertEqual(en["r2-nbsp"], "The main story today is a report.")
+        self.assertNotIn("\u00a0", en["r2-nbsp"])
+        # 第 3 条：开头后面只有数字也照常显示
+        self.assertEqual(zh["r2-zh-digits"], "今天最值得知道的是42。")
+        # 第 4 条：句末 [12]（中英各一例）与连续编号 [1][2]、[1], [2]、[1]、[2]
+        self.assertEqual(en["r2-cite12"], "The main story today is a lab released weights.")
+        self.assertEqual(zh["r2-zh-cite12"], "今天最值得知道的是：研究人员发布了新的评测。")
+        self.assertEqual(en["r2-adjacent"], "The main story today is a lab released weights.")
+        self.assertEqual(en["r2-comma"], "The main story today is a lab released weights.")
+        self.assertEqual(zh["r2-zh-dunhao"], "今天最值得知道的是：研究人员发布了新的评测。")
+        # 第 4 条：恰好 320 字符的 list_summary 能通过构建（本类 setUpClass 构建成功），并原样显示
+        s = en["r2-ls-320"]
+        self.assertEqual(len(s), 320)
+        self.assertTrue(s.startswith("The main story today is a lab released weights and more weights"), s)
+        self.assertTrue(s.endswith("."), s)
+
     def test_list_summary_escaped(self):
         s = (self.out / "en/posts/daily/index.html").read_text(encoding="utf-8")
         self.assertIn("chip bill by 5 &lt; 6 after R&amp;D talks.</p>", s)
@@ -314,7 +337,7 @@ class ListSummaryFieldIsolation(unittest.TestCase):
             shutil.rmtree(d, ignore_errors=True)
 
     def test_only_summary_rows_differ(self):
-        self.assertEqual(len(self.changed), 4)
+        self.assertEqual(len(self.changed), 5)
         files_a = sorted(p.relative_to(self.out_a).as_posix() for p in self.out_a.rglob("*") if p.is_file())
         files_b = sorted(p.relative_to(self.out_b).as_posix() for p in self.out_b.rglob("*") if p.is_file())
         self.assertEqual(files_a, files_b)
