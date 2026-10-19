@@ -40,6 +40,11 @@ class CommentEntry(unittest.TestCase):
                 self.assertEqual(s.count('href="#comments"'), 1)
                 m = LINK.search(s)
                 self.assertIsNotNone(m, "date-line link")
+                self.assertIn(
+                    '<a href="#comments" style="text-decoration:underline;text-underline-offset:.15em">',
+                    m.group(0),
+                    "date-line link must stay underlined",
+                )
                 self.assertEqual(html.unescape(m.group(1)), jump)
                 m = SECTION.search(s)
                 self.assertIsNotNone(m, "heading + invitation above giscus")
