@@ -1,11 +1,13 @@
 {{- /* 产业链接段（路线图 v1.12 第 15.2 节；写法见 docs/industry-section.md）。放在日报条目的“为什么重要”之后；条目说不出作用在哪一端时不用。
-  用法：{{< industry-link item="1" industry="ai" side="demand" inference="来源没测的一步" economy="investment" series="美国……" publisher="……" frequency="monthly" >}}来源里的哪个量对应这个产业的哪项需求、成本或利润 [1]。{{< /industry-link >}}
+  用法：{{< industry-link item="2" industry="semiconductors" side="demand" inference="这些订单是否转化为实际出货" economy="investment" series="美国……" publisher="……" frequency="monthly" series_cite="3" broad="true" >}}来源里的哪个量对应这个产业的哪项需求、成本或利润 [2]。{{< /industry-link >}}
   - item：所在日报条目的编号（正整数），只用作段落锚点 id="industry-link-<item>"，不显示；
   - industry：energy | semiconductors | ai | manufacturing（试点四个产业，显示名取 i18n）；side：demand | cost | profit；
   - 正文（必填）：来源里的哪个量对应什么，出处编号写 [n]，按本页引用定义渲染成链接；
-  - inference（可选）：来源没有测的一步，渲染时后接“（推断：来源没有测这一步）”/“(Inference: the source did not measure this step)”；
-  - economy（可选，写到产业这一层为止时省略）：investment | consumption | prices | credit | housing | external | fiscal | employment；
-  - series、publisher、frequency（可选，三项同给，且须给 economy）：对照的公开序列名、原始发布机构、频率（daily | weekly | monthly | quarterly | annual），固定附“宽口径，不专指本条所说的环节”。
+  - inference（可选）：只填来源没有测量、有待判断的那个联系（不带句末标点），渲染成完整句“来源没有测量<联系>；这一联系是推断。”/“The source did not measure whether <connection>; this connection is an inference.”；
+  - economy、series、publisher、frequency、series_cite（可选，五项同给；没有对照序列时全部省略，段落写到产业这一层为止）：
+    economy：investment | consumption | prices | credit | housing | external | fiscal | employment；series、publisher、frequency：对照的公开序列名、原始发布机构、频率（daily | weekly | monthly | quarterly | annual）；
+    series_cite：该序列在原始发布机构处的出处编号（正整数，须有本页引用定义）；
+  - broad（可选，只能写 broad="true"，且须给对照序列）：作者确认该序列是宽口径时才写，渲染时附“这个指标覆盖范围较广，不专指本条所说的环节。”；不是宽口径就省略。
   没有任何评论走势的参数；参数取值不在上列范围内时 errorf（构建失败）。 */ -}}
 {{- $p := .Page -}}
 {{- $where := $p.File.Path -}}
@@ -20,26 +22,29 @@
 {{- $sep := i18n "industry_sentence_sep" -}}
 {{- $out := i18n "industry_link_lead" (dict "industry" (i18n (printf "industry_name_%s" $industry)) "side" (i18n (printf "industry_side_%s" $side))) -}}
 {{- $out = printf "%s%s%s" $out $sep ($p.RenderString (dict "display" "inline") $body) -}}
-{{- with .Get "inference" -}}
+{{- with strings.TrimSpace (.Get "inference" | default "") -}}
+  {{- if findRE `[。．.！？!?；;，,：:]$` . -}}{{- errorf "%s: industry-link 的 inference 只填有待判断的联系，不带句末标点（现为 %q）" $where . -}}{{- end -}}
   {{- $out = printf "%s%s%s" $out $sep (i18n "industry_link_inference" (dict "text" ($p.RenderString (dict "display" "inline") .))) -}}
 {{- end -}}
-{{- $economy := .Get "economy" | default "" -}}
-{{- $series := .Get "series" | default "" -}}
-{{- $publisher := .Get "publisher" | default "" -}}
-{{- $frequency := .Get "frequency" | default "" -}}
-{{- if or $series $publisher $frequency -}}
-  {{- if not (and $series $publisher $frequency) -}}{{- errorf "%s: industry-link 的 series、publisher、frequency 须同时给出" $where -}}{{- end -}}
-  {{- if not $economy -}}{{- errorf "%s: industry-link 给了对照序列，但没有给 economy" $where -}}{{- end -}}
-  {{- if not (in (slice "daily" "weekly" "monthly" "quarterly" "annual") $frequency) -}}{{- errorf "%s: industry-link 的 frequency 只能是 daily、weekly、monthly、quarterly、annual（现为 %q）" $where $frequency -}}{{- end -}}
+{{- $g := dict -}}
+{{- range slice "economy" "series" "publisher" "frequency" "series_cite" -}}
+  {{- $g = merge $g (dict . (strings.TrimSpace (string ($.Get . | default "")))) -}}
 {{- end -}}
-{{- if $economy -}}
-  {{- if not (in (slice "investment" "consumption" "prices" "credit" "housing" "external" "fiscal" "employment") $economy) -}}{{- errorf "%s: industry-link 的 economy 只能是 investment、consumption、prices、credit、housing、external、fiscal、employment（现为 %q）" $where $economy -}}{{- end -}}
-  {{- $area := i18n (printf "industry_economy_%s" $economy) -}}
-  {{- if $series -}}
-    {{- $out = printf "%s%s%s" $out $sep (i18n "industry_link_economy_series" (dict "area" $area "series" (htmlEscape $series) "publisher" (htmlEscape $publisher) "frequency" (i18n (printf "industry_frequency_%s" $frequency)))) -}}
-  {{- else -}}
-    {{- $out = printf "%s%s%s" $out $sep (i18n "industry_link_economy" (dict "area" $area)) -}}
+{{- $any := or $g.economy $g.series $g.publisher $g.frequency $g.series_cite -}}
+{{- if $any -}}
+  {{- if not $g.series -}}{{- errorf "%s: industry-link 给了 economy 等参数，但没有对照序列；没有对照数据时省略 economy，段落写到产业这一层为止" $where -}}{{- end -}}
+  {{- range slice "economy" "series" "publisher" "frequency" "series_cite" -}}
+    {{- if not (index $g .) -}}{{- errorf "%s: industry-link 的 economy、series、publisher、frequency、series_cite 须同时给出（缺少 %s）" $where . -}}{{- end -}}
   {{- end -}}
+  {{- if not (in (slice "investment" "consumption" "prices" "credit" "housing" "external" "fiscal" "employment") $g.economy) -}}{{- errorf "%s: industry-link 的 economy 只能是 investment、consumption、prices、credit、housing、external、fiscal、employment（现为 %q）" $where $g.economy -}}{{- end -}}
+  {{- if not (in (slice "daily" "weekly" "monthly" "quarterly" "annual") $g.frequency) -}}{{- errorf "%s: industry-link 的 frequency 只能是 daily、weekly、monthly、quarterly、annual（现为 %q）" $where $g.frequency -}}{{- end -}}
+  {{- if not (findRE `^[1-9][0-9]*$` $g.series_cite) -}}{{- errorf "%s: industry-link 的 series_cite 必须是一个出处编号（正整数，指向原始发布机构的本页出处）（现为 %q）" $where $g.series_cite -}}{{- end -}}
+  {{- $out = printf "%s%s%s" $out $sep (i18n "industry_link_economy_series" (dict "area" (i18n (printf "industry_economy_%s" $g.economy)) "series" (htmlEscape $g.series) "publisher" (htmlEscape $g.publisher) "frequency" (i18n (printf "industry_frequency_%s" $g.frequency)) "series_cite" $g.series_cite)) -}}
+{{- end -}}
+{{- if isset .Params "broad" -}}
+  {{- if ne (string (.Get "broad")) "true" -}}{{- errorf "%s: industry-link 的 broad 只能写 broad=\"true\"（作者确认是宽口径时才写；不是宽口径就省略）（现为 %q）" $where (string (.Get "broad")) -}}{{- end -}}
+  {{- if not $any -}}{{- errorf "%s: industry-link 给了 broad，但没有对照序列" $where -}}{{- end -}}
+  {{- $out = printf "%s%s%s" $out $sep (i18n "industry_link_series_broad") -}}
 {{- end -}}
 <p class="industry-link" id="industry-link-{{ $item }}">{{ partial "industry-cites.html" (dict "page" $p "text" $out) | safeHTML }}</p>
 {{- /* 末尾不留换行 */ -}}

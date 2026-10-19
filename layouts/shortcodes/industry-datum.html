@@ -1,8 +1,10 @@
 {{- /* “产业与经济数据”小节里的一条数据（只能放在 industry-data 里）：只渲染发布值和按公开方法算出的计算值，没有正文，也没有分段或评论走势的参数。
-  用法：{{< industry-datum series="美国……" publisher="……" frequency="monthly" period="2026 年 9 月" value="102.3" unit="" released="2026-10-17" calc="同比" calc_value="1.2%" formula="(102.3/101.1-1)×100=1.2" cite="4" >}}
-  - series、publisher、period、released（YYYY-MM-DD）、value（数字）、cite（出处编号，如 4 或 4,5）必填；unit 可选；
-  - calc、calc_value、formula 可选，三项同给：calc_value 只能是数字（可带 %），formula 只能含数字、运算符、括号、等号和 %；
-  - frequency：daily | weekly | monthly | quarterly | annual。固定附“宽口径，不专指某个具体环节”。 */ -}}
+  用法：{{< industry-datum series="美国……" publisher="……" frequency="monthly" period="2026 年 9 月" value="102.3" unit="" released="2026-10-17" calc="同比" calc_value="1.2%" formula="(102.3/101.1-1)×100%≈1.2%" cite="4" broad="true" >}}
+  - series、publisher、period、released、value、cite（出处编号，如 4 或 4,5）必填；unit 可选；
+  - value、calc_value：数字，千分位须规范（如 1,234.5；不接受 1,2 或 1,,2）；calc_value 可带 %；released：真实存在的日期 YYYY-MM-DD；
+  - calc、calc_value、formula 可选，三项同给：formula 只能含数字、运算符、括号、等号、约等号 ≈ 和 %（四舍五入的结果用 ≈，不写成 =）；
+  - frequency：daily | weekly | monthly | quarterly | annual；
+  - broad（可选，只能写 broad="true"）：作者确认该序列是宽口径时才写，渲染时附“这个指标覆盖范围较广，不专指某个产业环节。”；不是宽口径就省略。 */ -}}
 {{- $p := .Page -}}
 {{- $where := $p.File.Path -}}
 {{- if or (not .Parent) (ne .Parent.Name "industry-data") -}}{{- errorf "%s: industry-datum 只能放在 industry-data 小节里" $where -}}{{- end -}}
@@ -13,8 +15,19 @@
   {{- $f = merge $f (dict . $v) -}}
 {{- end -}}
 {{- if not (in (slice "daily" "weekly" "monthly" "quarterly" "annual") $f.frequency) -}}{{- errorf "%s: industry-datum 的 frequency 只能是 daily、weekly、monthly、quarterly、annual（现为 %q）" $where $f.frequency -}}{{- end -}}
-{{- if not (findRE `^[-+−]?[0-9][0-9,]*(\.[0-9]+)?$` $f.value) -}}{{- errorf "%s: industry-datum 的 value 必须是数字（现为 %q）" $where $f.value -}}{{- end -}}
-{{- if not (findRE `^\d{4}-\d{2}-\d{2}$` $f.released) -}}{{- errorf "%s: industry-datum 的 released 必须是 YYYY-MM-DD（现为 %q）" $where $f.released -}}{{- end -}}
+{{- if not (findRE `^[-+−]?(0|[1-9][0-9]*|[1-9][0-9]{0,2}(,[0-9]{3})+)(\.[0-9]+)?$` $f.value) -}}{{- errorf "%s: industry-datum 的 value 必须是数字，千分位须规范（现为 %q）" $where $f.value -}}{{- end -}}
+{{- $dateOK := false -}}
+{{- with findRESubmatch `^(\d{4})-(\d{2})-(\d{2})$` $f.released 1 -}}
+  {{- $dg := index . 0 -}}
+  {{- $y := sub (int (printf "1%s" (index $dg 1))) 10000 -}}
+  {{- $m := sub (int (printf "1%s" (index $dg 2))) 100 -}}
+  {{- $d := sub (int (printf "1%s" (index $dg 3))) 100 -}}
+  {{- if and (ge $y 1) (ge $m 1) (le $m 12) (ge $d 1) -}}
+    {{- $leap := or (and (eq (mod $y 4) 0) (ne (mod $y 100) 0)) (eq (mod $y 400) 0) -}}
+    {{- $dateOK = le $d (index (slice 31 (cond $leap 29 28) 31 30 31 30 31 31 30 31 30 31) (sub $m 1)) -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $dateOK -}}{{- errorf "%s: industry-datum 的 released 必须是真实存在的日期 YYYY-MM-DD（现为 %q）" $where $f.released -}}{{- end -}}
 {{- if not (findRE `^[1-9][0-9]*(\s*,\s*[1-9][0-9]*)*$` $f.cite) -}}{{- errorf "%s: industry-datum 的 cite 必须是出处编号，如 4 或 4,5（现为 %q）" $where $f.cite -}}{{- end -}}
 {{- $cites := slice -}}
 {{- range split (replaceRE `\s` "" $f.cite) "," -}}{{- $cites = $cites | append (printf "[%s]" .) -}}{{- end -}}
@@ -27,10 +40,13 @@
 {{- $formula := strings.TrimSpace (.Get "formula" | default "") -}}
 {{- if or $calc $cv $formula -}}
   {{- if not (and $calc $cv $formula) -}}{{- errorf "%s: industry-datum 的 calc、calc_value、formula 须同时给出" $where -}}{{- end -}}
-  {{- if not (findRE `^[-+−]?[0-9][0-9,]*(\.[0-9]+)?%?$` $cv) -}}{{- errorf "%s: industry-datum 的 calc_value 只能是数字（可带 %%）（现为 %q）" $where $cv -}}{{- end -}}
-  {{- if not (findRE `^[0-9.,\s()+\-−×÷*/=%]+$` $formula) -}}{{- errorf "%s: industry-datum 的 formula 只能含数字、运算符、括号、等号和 %%（现为 %q）" $where $formula -}}{{- end -}}
+  {{- if not (findRE `^[-+−]?(0|[1-9][0-9]*|[1-9][0-9]{0,2}(,[0-9]{3})+)(\.[0-9]+)?%?$` $cv) -}}{{- errorf "%s: industry-datum 的 calc_value 只能是数字（可带 %%），千分位须规范（现为 %q）" $where $cv -}}{{- end -}}
+  {{- if not (findRE `^[0-9.,\s()+\-−×÷*/=≈%]+$` $formula) -}}{{- errorf "%s: industry-datum 的 formula 只能含数字、运算符、括号、等号、约等号 ≈ 和 %%（现为 %q）" $where $formula -}}{{- end -}}
   {{- $out = printf "%s%s%s" $out $sep (i18n "industry_datum_calc" (dict "calc" (htmlEscape $calc) "value" $cv "formula" (htmlEscape $formula))) -}}
 {{- end -}}
-{{- $out = printf "%s%s%s" $out $sep (i18n "industry_datum_broad") -}}
+{{- if isset .Params "broad" -}}
+  {{- if ne (string (.Get "broad")) "true" -}}{{- errorf "%s: industry-datum 的 broad 只能写 broad=\"true\"（作者确认是宽口径时才写；不是宽口径就省略）（现为 %q）" $where (string (.Get "broad")) -}}{{- end -}}
+  {{- $out = printf "%s%s%s" $out $sep (i18n "industry_datum_broad") -}}
+{{- end -}}
 <p class="industry-datum">{{ partial "industry-cites.html" (dict "page" $p "text" $out) | safeHTML }}</p>
 {{- /* 末尾不留换行 */ -}}

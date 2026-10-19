@@ -1,14 +1,32 @@
-{{- /* 产业链接段和产业数据条目共用：把一段已渲染的文字里的出处编号 [n] 换成本页“[n]: 地址”引用定义指向的链接，输出与 render-link.html 对数字链接文字的写法一致（[<a href="地址">n</a>]）。
-  参数：dict "page" 页面 "text" 文字（HTML）。正文里找不到 [n] 的引用定义时 errorf（构建失败）。只供 shortcodes/industry-*.html 调用。 */ -}}
+{{- /* 产业链接段和产业数据条目共用：把一段已渲染的文字里正文中独立的出处编号 [n] 换成本页“[n]: 地址”引用定义指向的链接，输出与 render-link.html 对数字链接文字的写法一致（[<a href="地址">n</a>]）。
+  参数：dict "page" 页面 "text" 文字（HTML）。只供 shortcodes/industry-*.html 调用。
+  - 只处理标签以外的正文文字：标签及其属性、<code>、<pre>、HTML 注释里的方括号原样保留；紧跟在字母、数字或下划线后的 [n] 不算出处标记，原样保留；
+  - 引用定义只在去掉代码围栏（``` 或 ~~~）后的正文里找，代码围栏里的“[n]: 地址”不算；
+  - 地址只接受 http:// 或 https://（不分大小写），其余（如 javascript:、data:、相对地址）errorf（构建失败）；
+  - 正文里找不到 [n] 的引用定义时 errorf（构建失败）。 */ -}}
 {{- $p := .page -}}
 {{- $s := .text -}}
-{{- range uniq (findRE `\[\d+\]` $s) -}}
-  {{- $n := strings.Trim . "[]" -}}
-  {{- $def := findRESubmatch (printf `(?m)^ {0,3}\[%s\]:[ \t]*<?([^\s>]+)>?` $n) $p.RawContent 1 -}}
-  {{- if $def -}}
-    {{- $s = replace $s . (printf `[<a href="%s">%s</a>]` (htmlEscape (index (index $def 0) 1)) $n) -}}
+{{- $bt := "```" -}}
+{{- $raw := $p.RawContent -}}
+{{- $raw = replaceRE (printf "(?ms)^ {0,3}%s.*?(?:^ {0,3}%s[ \\t]*$|\\z)" $bt $bt) "" $raw -}}
+{{- $raw = replaceRE "(?ms)^ {0,3}~~~.*?(?:^ {0,3}~~~[ \\t]*$|\\z)" "" $raw -}}
+{{- $tokens := findRE `(?s)<!--.*?-->|<code\b[^>]*>.*?</code>|<pre\b[^>]*>.*?</pre>|<[^>]*>|\[[1-9][0-9]*\]|[^<\[]+|[<\[]` $s -}}
+{{- if ne (delimit $tokens "") $s -}}{{- errorf "%s: industry-cites 无法切分文字（%q）" $p.File.Path $s -}}{{- end -}}
+{{- $out := "" -}}
+{{- $prev := "" -}}
+{{- range $tokens -}}
+  {{- $t := . -}}
+  {{- if and (findRE `^\[[1-9][0-9]*\]$` $t) (not (findRE `[0-9A-Za-z_]$` $prev)) -}}
+    {{- $n := strings.Trim $t "[]" -}}
+    {{- $def := findRESubmatch (printf `(?m)^ {0,3}\[%s\]:[ \t]*<?([^\s>]+)>?` $n) $raw 1 -}}
+    {{- if not $def -}}{{- errorf "%s: 出处编号 [%s] 在正文里没有对应的引用定义（[%s]: 地址）" $p.File.Path $n $n -}}{{- end -}}
+    {{- $url := index (index $def 0) 1 -}}
+    {{- if not (findRE `(?i)^https?://\S+$` $url) -}}{{- errorf "%s: 出处编号 [%s] 的引用定义地址只能是 http:// 或 https:// 开头（现为 %q）" $p.File.Path $n $url -}}{{- end -}}
+    {{- $out = printf `%s[<a href="%s">%s</a>]` $out (htmlEscape $url) $n -}}
+    {{- $prev = "]" -}}
   {{- else -}}
-    {{- errorf "%s: 出处编号 [%s] 在正文里没有对应的引用定义（[%s]: 地址）" $p.File.Path $n $n -}}
+    {{- $out = printf "%s%s" $out $t -}}
+    {{- if not (hasPrefix $t "<") -}}{{- $prev = $t -}}{{- end -}}
   {{- end -}}
 {{- end -}}
-{{- return $s -}}
+{{- return $out -}}
