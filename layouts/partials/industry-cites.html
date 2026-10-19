@@ -1,0 +1,122 @@
+{{- /* 产业链接段和产业数据条目共用：把一段已渲染的文字里正文中独立的出处编号 [n] 换成本页“[n]: 地址”引用定义指向的链接，输出与 render-link.html 对数字链接文字的写法一致（[<a href="地址">n</a>]）。
+  参数：dict "page" 页面 "text" 文字（HTML）。只供 shortcodes/industry-*.html 调用。
+  一、引用定义：逐行扫描本页 Markdown 原文（RawContent），按 CommonMark 规则跳过不是正文的部分，只认剩下的“[n]: 地址”，同一编号以第一条为准：
+  - 代码围栏：记录开栏行的符号（` 或 ~）和长度，只有同一符号、长度不短于开栏、后面只有空格的行才闭栏；开栏缩进最多 3 个空格（列表项里的围栏按列表项内容的缩进算），没有闭栏时到文末都算围栏；
+  - HTML 块：<!-- … -->、<? … ?>、<!X … >、<![CDATA[ … ]]>、<script|pre|style|textarea> … 结束标签按各自的结束标记；以其他标签开头的行到下一个空行为止；
+  - 引用定义不能接在段落文字后面：只有在文首、空行、标题、分隔线、围栏或 HTML 块之后，或紧接另一条引用定义时才算；
+  - 从严处理容器和重复（不解析列表与引用块）：代码围栏和 HTML 块以外，凡是像引用定义的行带列表或引用块前缀（如“- [7]: …”“> [7]: …”）（含以 > 开头的行）、或行首有任何空格或制表符（可能是列表项续行），一律 errorf；
+    同一编号的引用定义（含不接在空行后、因而不生效的）出现两次以上也 errorf，不论位置；
+  - 地址只接受 http:// 或 https://（不分大小写），其余（如 javascript:、data:、相对地址）errorf（构建失败）；找不到 [n] 的引用定义时 errorf。
+  二、出处标记：把文字切成 HTML 片段，只在标签以外的正文文字里替换：
+  - 标签按引号边界整体跳过（双引号、单引号、不带引号的属性值里的 > 和方括号都不当正文）；HTML 注释、CDATA、声明、处理指令整体跳过；
+  - <code>、<pre>、<kbd>、<samp>、<script>、<style>、<textarea>、<a> 的整个元素（含内容）原样保留，不在链接里再套链接；
+  - 紧跟在字母、数字或下划线后的 [n] 不算出处标记；无法识别的 < 时 errorf（构建失败）。 */ -}}
+{{- $p := .page -}}
+{{- $s := .text -}}
+{{- $where := $p.File.Path -}}
+{{- /* 一、逐行收集引用定义 */ -}}
+{{- $defs := dict -}}
+{{- $mode := "" -}}{{- /* "" 正文；"fence" 代码围栏；"html-end" 到结束标记为止的 HTML 块；"html-blank" 到空行为止的 HTML 块 */ -}}
+{{- $fch := "" -}}{{- $flen := 0 -}}{{- $fmin := 0 -}}{{- $fmax := 3 -}}
+{{- $hend := "" -}}
+{{- $defOK := true -}}
+{{- $seen := dict -}}
+{{- $htmlStarts := slice
+  (slice `^ {0,3}<(?i:script|pre|style|textarea)(?:[\s>]|$)` `(?i)</(?:script|pre|style|textarea)\s*>`)
+  (slice `^ {0,3}<!--` `-->`)
+  (slice `^ {0,3}<\?` `\?>`)
+  (slice `^ {0,3}<!\[CDATA\[` `\]\]>`)
+  (slice `^ {0,3}<![A-Za-z]` `>`) -}}
+{{- range split (replace $p.RawContent "\r" "") "\n" -}}
+  {{- $l := . -}}
+  {{- if eq $mode "fence" -}}
+    {{- with findRESubmatch "^( *)(`{3,}|~{3,})[ \\t]*$" $l 1 -}}
+      {{- $g := index . 0 -}}
+      {{- $ind := len (index $g 1) -}}{{- $run := index $g 2 -}}
+      {{- if and (eq (substr $run 0 1) $fch) (ge (len $run) $flen) (ge $ind $fmin) (le $ind $fmax) -}}
+        {{- $mode = "" -}}{{- $defOK = true -}}
+      {{- end -}}
+    {{- end -}}
+  {{- else if eq $mode "html-end" -}}
+    {{- if findRE $hend $l -}}{{- $mode = "" -}}{{- $defOK = true -}}{{- end -}}
+  {{- else if eq $mode "html-blank" -}}
+    {{- if not (strings.TrimSpace $l) -}}{{- $mode = "" -}}{{- $defOK = true -}}{{- end -}}
+  {{- else -}}
+    {{- $fence := findRESubmatch "^( {0,3}(?:(?:[-+*]|[0-9]{1,9}[.)]) {1,4})*)(`{3,}|~{3,})(.*)$" $l 1 -}}
+    {{- $isFence := false -}}
+    {{- with $fence -}}
+      {{- $g := index . 0 -}}
+      {{- $run := index $g 2 -}}
+      {{- if not (and (hasPrefix $run "`") (strings.Contains (index $g 3) "`")) -}}
+        {{- $isFence = true -}}
+        {{- $mode = "fence" -}}{{- $fch = substr $run 0 1 -}}{{- $flen = len $run -}}
+        {{- $prefix := index $g 1 -}}
+        {{- if findRE `[-+*.)]` $prefix -}}{{- $fmin = len $prefix -}}{{- $fmax = add (len $prefix) 3 -}}{{- else -}}{{- $fmin = 0 -}}{{- $fmax = 3 -}}{{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if not $isFence -}}
+      {{- $html := "" -}}
+      {{- range $htmlStarts -}}
+        {{- if and (not $html) (findRE (index . 0) $l) -}}
+          {{- $html = "end" -}}
+          {{- if not (findRE (index . 1) (replaceRE (index . 0) "" $l)) -}}{{- $mode = "html-end" -}}{{- $hend = index . 1 -}}{{- end -}}
+        {{- end -}}
+      {{- end -}}
+      {{- if and (not $html) (findRE `^ {0,3}</?[A-Za-z]` $l) -}}
+        {{- $html = "blank" -}}{{- $mode = "html-blank" -}}
+      {{- end -}}
+      {{- if not $html -}}
+        {{- if or (findRE `^[ \t]*(?:(?:>[ \t]?|(?:[-+*]|[0-9]{1,9}[.)])[ \t]+)[ \t]*)+\[[^\]]+\]:` $l) (findRE `^[ \t]+\[[^\]]+\]:` $l) -}}
+          {{- errorf "%s: 引用定义只能写在正文顶层的行首，不能写在列表项或引用块里，行首也不能有任何空格或制表符（%q）" $where $l -}}
+        {{- end -}}
+        {{- with findRESubmatch `^ {0,3}\[([1-9][0-9]*)\]:` $l 1 -}}
+          {{- $k := index (index . 0) 1 -}}
+          {{- if isset $seen $k -}}{{- errorf "%s: 出处编号 [%s] 有两条以上引用定义；同一编号只能定义一次" $where $k -}}{{- end -}}
+          {{- $seen = merge $seen (dict $k true) -}}
+        {{- end -}}
+      {{- end -}}
+      {{- if $html -}}
+        {{- $defOK = true -}}
+      {{- else if not (strings.TrimSpace $l) -}}
+        {{- $defOK = true -}}
+      {{- else if and $defOK (findRE `^ {0,3}\[[^\]]+\]:` $l) -}}
+        {{- with findRESubmatch `^ {0,3}\[([1-9][0-9]*)\]:[ \t]*<?([^\s>]+)>?` $l 1 -}}
+          {{- $g := index . 0 -}}
+          {{- if not (isset $defs (index $g 1)) -}}{{- $defs = merge $defs (dict (index $g 1) (index $g 2)) -}}{{- end -}}
+        {{- end -}}
+      {{- else if findRE `^ {0,3}(?:#{1,6}(?:[ \t]|$)|(?:-[ \t]*){3,}$|(?:\*[ \t]*){3,}$|(?:_[ \t]*){3,}$)` $l -}}
+        {{- $defOK = true -}}
+      {{- else -}}
+        {{- $defOK = false -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- /* 二、切分 HTML，只替换正文文字里的出处标记 */ -}}
+{{- $attr := `(?:\s+[^\s"'<>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>]+))?)*\s*/?` -}}
+{{- $skipEl := slice -}}
+{{- range slice "code" "pre" "kbd" "samp" "script" "style" "textarea" "a" -}}
+  {{- $skipEl = $skipEl | append (printf `<%s%s>.*?</%s\s*>` . $attr .) -}}
+{{- end -}}
+{{- $re := printf `(?si)<!--.*?-->|<!\[CDATA\[.*?\]\]>|<![A-Za-z][^>]*>|<\?.*?\?>|%s|<[A-Za-z][A-Za-z0-9-]*%s>|</[A-Za-z][A-Za-z0-9-]*\s*>|\[[1-9][0-9]*\]|[^<\[]+|[<\[]` (delimit $skipEl "|") $attr -}}
+{{- $tokens := findRE $re $s -}}
+{{- if ne (delimit $tokens "") $s -}}{{- errorf "%s: industry-cites 无法切分文字（%q）" $where $s -}}{{- end -}}
+{{- $out := "" -}}
+{{- $prev := "" -}}
+{{- range $tokens -}}
+  {{- $t := . -}}
+  {{- if eq $t "<" -}}
+    {{- errorf "%s: industry-cites 遇到无法识别的 HTML 标签（%q）" $where $s -}}
+  {{- else if and (findRE `^\[[1-9][0-9]*\]$` $t) (not (findRE `[0-9A-Za-z_]$` $prev)) -}}
+    {{- $n := strings.Trim $t "[]" -}}
+    {{- if not (isset $defs $n) -}}{{- errorf "%s: 出处编号 [%s] 在正文里没有对应的引用定义（[%s]: 地址）" $where $n $n -}}{{- end -}}
+    {{- $url := index $defs $n -}}
+    {{- if not (findRE `(?i)^https?://\S+$` $url) -}}{{- errorf "%s: 出处编号 [%s] 的引用定义地址只能是 http:// 或 https:// 开头（现为 %q）" $where $n $url -}}{{- end -}}
+    {{- $out = printf `%s[<a href="%s">%s</a>]` $out (htmlEscape $url) $n -}}
+    {{- $prev = "]" -}}
+  {{- else -}}
+    {{- $out = printf "%s%s" $out $t -}}
+    {{- if not (hasPrefix $t "<") -}}{{- $prev = $t -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}
