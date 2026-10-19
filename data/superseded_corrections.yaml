@@ -17,7 +17,7 @@
   note_en: "(The addendum below updates the statements that the last three papers shared one sentence and that two parenthetical notes remained)"
 - page: posts/daily/2026-10-18
   date: "2026-10-18"
-  occurrence: 1          # 更正区第 1 条（共 2 条）；第 2 条（补充）更新导语和原帖说法的核验结论，其余改动仍有效
+  occurrence: 1          # 更正区第 1 条（共 4 条）；第 2 条（补充）更新导语和原帖说法的核验结论，其余改动仍有效
   langs: [zh, en]
   kind: partial
   note_zh: "（导语范围及原帖“取消闰秒”的核验结论已由下方补充更正更新）"
@@ -38,7 +38,7 @@
   note_en: "(Part of this note has been updated by the next correction)"
 - page: posts/daily/2026-10-18
   date: "2026-10-18"
-  occurrence: 2          # 更正区第 2 条（共 3 条）；第 3 条（2026-10-19）更新对决议理由的解读和决议名称
+  occurrence: 2          # 更正区第 2 条（共 4 条）；第 3 条（2026-10-19）更新对决议理由的解读和决议名称
   langs: [zh, en]
   kind: partial
   note_zh: "（部分说明已由下一条更正更新）"
