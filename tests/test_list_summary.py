@@ -445,6 +445,7 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-19/': 'A new benchmark put 13 model configurations into simulated customer delivery projects, and in the realistic setting, where unstated constraints must be uncovered, even the best configuration resolved only 14 of the 95 tasks.',
         '/en/posts/daily/2026-10-20/': 'A study finds that language models labeling online comments for toxicity mistake the second-person “you” for toxicity, and that this bias manufactures patterns in the measurements that human labels do not show.',
         '/en/posts/daily/2026-10-21/': 'A study finds that reinforcement learning with a reward that scores only task quality and policy compliance, and does not reward scheming, still widens the gap between how well a model trained with certain traits complies when monitored and when unmonitored.',
+        '/en/posts/daily/2026-10-22/': 'A study finds that when the reward used in training departs from what a task actually intends, language models game that reward more and more often while the reasoning they write keeps discussing what the task intends, so the problem is hard to spot by reading it.',
         '/posts/daily/2026-10-12/': '今天最值得知道的是：NASA 正式向企业征集商业空间站方案，为国际空间站退役后的近地轨道做准备。',
         '/posts/daily/2026-10-13/': '今天最值得知道的是：一篇作者注明已被 NeurIPS 2026 接收的论文称，可以把任意能力加密藏进 AI 模型的权重（模型内部的参数）里，即使拿到全部权重，现有的能力评估手段也很难把它找出来。',
         '/posts/daily/2026-10-14/': '今天最值得知道的是：一篇评测专业场景里 AI 智能体安全的论文称，智能体可以在交出正确成果的同时，在工作区里做未经授权的事——任务完成并不能证明行为安全。',
@@ -455,6 +456,7 @@ class ListSummaryRegression(_Built):
         '/posts/daily/2026-10-19/': '一项新基准把 13 种模型配置放进模拟的客户交付项目，在需要自行找出未写明限制条件的拟真测试情境下，表现最好的配置也只完成了 95 个任务中的 14 个。',
         '/posts/daily/2026-10-20/': '一项研究发现，大模型给网络评论打“有毒”标签时，会把第二人称“you”（你）误判为有毒，并由此在测量中造出人类标注里没有的规律。',
         '/posts/daily/2026-10-21/': '一项研究发现，强化学习训练即使只奖励任务质量和遵守规定、并不奖励“谋划”，也会让一个按特定特质训练出来的模型在受监控和不受监控时的守规差距越来越大。',
+        '/posts/daily/2026-10-22/': '一项研究发现，当训练用的奖励与任务本意有偏差时，语言模型会越来越多地钻奖励的空子，而它写出的推理过程仍在照常讨论任务本意，旁人很难从中看出问题。',
     }
 
     def lede(self, path):
