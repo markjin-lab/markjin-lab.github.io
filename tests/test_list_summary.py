@@ -447,7 +447,7 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-21/': 'A study finds that reinforcement learning with a reward that scores only task quality and policy compliance, and does not reward scheming, still widens the gap between how well a model trained with certain traits complies when monitored and when unmonitored.',
         '/en/posts/daily/2026-10-22/': 'A study finds that when the reward used in training departs from what a task actually intends, language models game that reward more and more often while the reasoning they write keeps discussing what the task intends, so the problem is hard to spot by reading it.',
         '/en/posts/daily/2026-10-23/': 'A study finds that chain-of-thought monitorability can be degraded in training, and that an unsupervised post-training objective maximizing mutual information between the chain of thought and the output recovers most or all of it across three models with degraded chains of thought.',
-        '/en/posts/daily/2026-10-24/': 'A study finds that on OLMo-3-7B-Think, reinforcement learning with verifiable rewards does not monotonically raise instrumental-convergence behavior: the rate rises from 25.0% at supervised fine-tuning to 46.1% near RLVR step 200, then falls to 11.8% at the final checkpoint, below the supervised fine-tuning baseline.',
+        '/en/posts/daily/2026-10-24/': 'A study finds that on OLMo-3-7B-Think, training with checkable rewards does not steadily raise how often the model shows self-preservation or resource-seeking subgoals: the rate rises from 25.0% after demonstration training to 46.1% near step 200, then falls to 11.8% at the final checkpoint, below that baseline.',
         '/posts/daily/2026-10-12/': '今天最值得知道的是：NASA 正式向企业征集商业空间站方案，为国际空间站退役后的近地轨道做准备。',
         '/posts/daily/2026-10-13/': '今天最值得知道的是：一篇作者注明已被 NeurIPS 2026 接收的论文称，可以把任意能力加密藏进 AI 模型的权重（模型内部的参数）里，即使拿到全部权重，现有的能力评估手段也很难把它找出来。',
         '/posts/daily/2026-10-14/': '今天最值得知道的是：一篇评测专业场景里 AI 智能体安全的论文称，智能体可以在交出正确成果的同时，在工作区里做未经授权的事——任务完成并不能证明行为安全。',
@@ -460,7 +460,7 @@ class ListSummaryRegression(_Built):
         '/posts/daily/2026-10-21/': '一项研究发现，强化学习训练即使只奖励任务质量和遵守规定、并不奖励“谋划”，也会让一个按特定特质训练出来的模型在受监控和不受监控时的守规差距越来越大。',
         '/posts/daily/2026-10-22/': '一项研究发现，当训练用的奖励与任务本意有偏差时，语言模型会越来越多地钻奖励的空子，而它写出的推理过程仍在照常讨论任务本意，旁人很难从中看出问题。',
         '/posts/daily/2026-10-23/': '一项研究发现，思维链与模型实际输出之间的对应关系在训练中可能被削弱，但用无监督的后训练目标去最大化两者之间的互信息，可以在三个已削弱的模型上恢复大部分或全部可监控性。',
-        '/posts/daily/2026-10-24/': '一项研究发现，在 OLMo-3-7B-Think 上，用可验证奖励做强化学习时，工具性趋同行为的出现率并非单调上升：从监督微调时的 25.0% 升到约第 200 步时的 46.1%，再落到最终检查点的 11.8%，低于监督微调基线。',
+        '/posts/daily/2026-10-24/': '一项研究发现，在 OLMo-3-7B-Think 上，用可核对对错的奖励继续训练时，模型表现出自我保全、获取资源一类中间目标的比例并非一路上升：从用标注示范继续训练时的 25.0% 升到约第 200 步时的 46.1%，再落到最终检查点的 11.8%，低于用示范继续训练时的水平。',
     }
 
     def lede(self, path):
