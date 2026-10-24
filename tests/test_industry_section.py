@@ -162,16 +162,20 @@ class IndustrySectionRendering(unittest.TestCase):
 
 
 class RepoContentUnchanged(unittest.TestCase):
-    """仓库 content/ 没有用这些 shortcode：构建产物里任何页面都不出现小节或产业链接段。"""
+    """开放数字前：仓库 content/ 可以出现产业链接段（industry-link），但不得出现产业与经济数据小节
+    （industry-data / industry-datum）。2026-10-25 起公开日报按 docs/industry-section.md 写链接段。"""
 
-    def test_no_markers(self):
+    # 仍禁止数据条目相关标记；允许 industry-link
+    FORBIDDEN = ('class="industry-datum"', 'class="industry-data"', 'id="industry-datum-')
+
+    def test_no_data_markers(self):
         tmp, out = build(ROOT / "content", with_data=True)
         try:
             pages = [p for p in out.rglob("*") if p.is_file() and p.suffix in (".html", ".xml")]
             self.assertGreater(len(pages), 5)
             for p in pages:
                 s = html.unescape(p.read_text(encoding="utf-8"))
-                for w in MARKERS:
+                for w in self.FORBIDDEN:
                     self.assertNotIn(html.unescape(w), s, p.relative_to(out).as_posix())
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
