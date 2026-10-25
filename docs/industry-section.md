@@ -16,7 +16,8 @@
   2. 过去 48 小时内有新发布；
   3. 原件已存档进 raw/；
   4. 已批准公开，且已通过公开门禁。其余机构的数只作线索，不进公开稿。
-- 2026-10-22 的例外：当天的产业内容只写产业链接段，不写任何数值，不用“产业与经济数据”小节；也不写 BEA 的数值，不放 BEA 的链接。
+- 开放数字（2026-10-25 起，quote_ref 王总 t549u「加快」+ Grok Bot 开放非 BEA 数字裁定）：产业链接段与“产业与经济数据”小节**可以写非 BEA、已批首批指标中条款已可用的数值**，并链到**已开放机构**的原始发布页。当前优先**美联储理事会**（`federalreserve.gov`，如 G.17）。仍硬拦：BEA 数值与 `bea.gov`；FRED / `fred.stlouisfed.org` / 字样 FRED；Census 第二类停源未书面解除前不采不写；EIA 的 WTI/Henry Hub 只私存；条款「待核」的 BLS/Census/EIA 先不进公开数值。industry-data 仍须同时满足上面 48h 新发布 + raw 存档 + 已批准公开四条。采集侧对 FRB 发新请求须等 agency-trial r11 `--permit` 合入并完成单 URL 放行后，本说明不授权自行请求。
+- 历史：2026-10-22 曾例外只写产业链接、不写任何数值；该例外已被上述开放规则取代，不再沿用。
 - 分段（下一期读数的区间）的限制：
   1. 只在第六节“产业分段分支”的前提满足后、且该序列可作观测变量时才写；写了就全部登记。
   2. 日度现货价格序列的条目始终只写事实与计算值，不写分段。
@@ -74,7 +75,8 @@
   2. it had a new release within the past 48 hours;
   3. the original release has been archived in raw/;
   4. the figure is approved for publication and has cleared the public gate. Figures from any other agency are leads only and never appear in a published piece.
-- Exception for 2026-10-22: that day's industry content is industry links only, with no figures at all and no “Industry and economic data” section; write no BEA values and include no BEA links.
+- Opening figures (from 2026-10-25; quote_ref 王总 t549u “加快” + Grok Bot ruling to open non-BEA figures): industry links and the “Industry and economic data” section **may include non-BEA figures from first-batch series whose terms are already usable**, with links to **opened** original-publisher pages. Prefer the **Federal Reserve Board** (`federalreserve.gov`, e.g. G.17) for now. Still hard-blocked: BEA values and `bea.gov`; FRED / `fred.stlouisfed.org` / the word FRED; Census (second-class stop) until written clearance; EIA WTI/Henry Hub private-only; BLS/Census/EIA while terms remain “待核” — no public figures yet. industry-data still needs all four conditions above (48h new release + raw archive + approved for publication). New FRB collection requests wait for agency-trial r11 `--permit` and the single-URL permit; this note does not authorize requests.
+- History: the 2026-10-22 exception (links only, no figures) is superseded by the opening rule above and no longer applies.
 - Limits on segments (ranges for the next reading):
   1. Write segments only after the prerequisites of the “industry segment branch” in section 6 are met and the series can serve as an observed variable; when segments are written, register all of them.
   2. Entries for daily spot price series always give only facts and computed values, never segments.
