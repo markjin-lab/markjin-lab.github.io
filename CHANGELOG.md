@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## 2026-10-26
+- 路线图 v1.14：王总经 Grok Bot 一起批准 markjin-data#109 与 #110（王总原话「一起批准 #109 和 #110」，quote_ref grokbot-chat:t688s2785；提案 sha 04add6e8…、cba7650a…；见 markjin-data #127）。采集侧：#109 账号类先分层抽样验证再按单元格启用 ≤20 停翻（topic 不变）；#110 R2 arXiv 只补 R1 无效分类，全有效则跳过并记 capture-failures，每周预选一天同窗复取五类。无 13.2 指标改善，属已确认的指标外例外。定时窗口不变；脚本改动待本条合入后由采集 bot 执行。#108（v1.13）不重做。
 - 路线图 v1.13：王总经 Grok Bot 批准 markjin-data#108（提案 sha 05d164c4…，审查 fe124b2，quote_ref grokbot-chat:t673s2722）。采集侧：MANIFEST 最终核验后登记本机 seen-ids；待办原子不覆盖发布（O_EXCL/link）；失败保留待办继续采；无 13.2 指标改善，属已确认的指标外例外。定时窗口不变；脚本改动待本条合入后由采集 bot 执行。
 
 ## 2026-10-18
