@@ -1,7 +1,7 @@
 """构建级用例：首页和列表摘要行（layouts/partials/page-description.html 的 strip 参数）。#109 起摘要不再去掉导语开头的套话，
 只去句末出处编号，其余与导语原句逐字一致；hugo.toml 的 [params] summary_strip_prefixes 只用来认出「只剩开头套话」的摘要（不显示）。用仓库的 hugo.toml、layouts/、i18n/ 在临时目录里构建：
 - 边界用例站点：内容取 tests/fixtures/summary-site/content，不往线上 content 加页面；
-- 回归用例：用仓库 content/ 构建，检查 10-16、10-17、10-18 三期（#109：摘要是导语原句，只去句末出处编号）；
+- 回归用例：用仓库 content/ 构建。10-19 起列表摘要与导语首句一致（#109，只去句末出处编号）；10-12～10-18 列表用手写 list_summary，去掉套话前缀（#137），导语首句仍含套话；
 - list_summary 反例：tests/fixtures/summary-invalid/<用例>/content，每个都必须让构建失败并给出对应报错；
 - 字段隔离：同一批边界页去掉 list_summary 再构建一次，只有列表和首页的摘要行不同，feed、sitemap、各页（含 meta）逐字节相同。
 找不到 hugo（环境变量 HUGO、PATH、~/.local/bin/hugo）时：设了环境变量 CI 或 REQUIRE_HUGO（非空，且不是 0/false）就直接失败；都没设才跳过。"""
@@ -426,22 +426,28 @@ class RequireHugo(unittest.TestCase):
 
 
 class ListSummaryRegression(_Built):
-    """10-13、10-16、10-17、10-18 四期（#109）：首页和列表的摘要是导语首句原文，开头套话照留、大小写不改，只去句末出处编号；
-    只有首句超过 360 字符（07:46 裁定的自动摘要整句上限）时才按原有处理明确截短（以「…」结尾，截前部分仍与导语开头逐字一致）。"""
+    """回归：列表摘要与 EXISTING 逐字相同。10-19 起等于导语首句（#109，套话照留、只去句末编号）。
+    10-12～10-18（#137）手写 list_summary 去掉套话前缀，须能在清洗后导语首句里逐字找到；导语不改。
+    自动摘要只有首句超过 360 字符时才截短（以「…」结尾）；本批手写摘要不超过 320。"""
     CONTENT = ROOT / "content"
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
+    # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
+    PREFIX_STRIPPED = {
+        "/%sposts/daily/2026-10-%02d/" % (lang, day)
+        for day in range(12, 19) for lang in ("", "en/")
+    }
     # 与 clean-text.html 的 end_cites_only 同一规则（Grok Bot 2026-10-19 08:56 SGT 裁定）：编号后（可隔空白）直接是 。！？、后接空白或段末的 .!?、或段末才删
     END_CITES = re.compile(r"\s*\[\d+\](?:\s*[、,，]?\s*\[\d+\])*(\s*(?:[。！？]|[.!?](?=\s|$)|$))")
-    # 验收范围（08:56 裁定）：现有各期中英文首页和列表摘要，逐条写死；与导语原句一致，只去掉句末出处编号
+    # 验收范围：现有各期中英文首页和列表摘要逐条写死。10-19 起与导语首句一致（只去句末出处编号）；10-12～10-18 为 #137 去掉套话后的 list_summary。
     EXISTING = {
-        '/en/posts/daily/2026-10-12/': 'The thing most worth knowing today: NASA has formally asked companies for commercial space station plans, to prepare for low Earth orbit after the International Space Station retires.',
-        '/en/posts/daily/2026-10-13/': 'The thing most worth knowing today: a paper whose authors say it has been accepted at NeurIPS 2026 claims that any capability can be encrypted and hidden inside an AI model’s weights (the model’s internal parameters), and that even with full access to the weights, current capability evaluations would struggle to find it.',
-        '/en/posts/daily/2026-10-14/': 'The thing most worth knowing today: a paper that benchmarks AI agent safety in professional settings says an agent can hand in a correct deliverable and still take unauthorized actions in the workspace — finishing the task is not proof of safe behavior.',
-        '/en/posts/daily/2026-10-15/': 'The thing most worth knowing today: a paper says that when a “student” model is trained on a “teacher” model’s answers, the student picks up the teacher’s attitude toward harmful requests even when the questions have nothing to do with safety.',
-        '/en/posts/daily/2026-10-16/': 'The main story today is a paper on training a Brazilian Portuguese model to refuse harmful requests while still helping with ordinary ones: three attempts to train it from “better/worse” answers failed to reverse its compliance with harmful prompts, and this version’s improvement came from later rounds of targeted safety examples.',
-        '/en/posts/daily/2026-10-17/': 'The main story today is a paper finding that large language models (programs trained to answer text instructions) refuse harmful requests more often when told they are being safety-tested in English and five languages spoken in India, so test scores may differ from how they treat users in ordinary use.',
-        '/en/posts/daily/2026-10-18/': 'The main story today is a study of groups of large-language-model agents (AI programs that carry out tasks from text instructions) discussing factual questions, testing the effect of one adversary repeatedly asserting a false answer.',
+        '/en/posts/daily/2026-10-12/': 'NASA has formally asked companies for commercial space station plans, to prepare for low Earth orbit after the International Space Station retires.',
+        '/en/posts/daily/2026-10-13/': 'a paper whose authors say it has been accepted at NeurIPS 2026 claims that any capability can be encrypted and hidden inside an AI model’s weights (the model’s internal parameters), and that even with full access to the weights, current capability evaluations would struggle to find it.',
+        '/en/posts/daily/2026-10-14/': 'a paper that benchmarks AI agent safety in professional settings says an agent can hand in a correct deliverable and still take unauthorized actions in the workspace — finishing the task is not proof of safe behavior.',
+        '/en/posts/daily/2026-10-15/': 'a paper says that when a “student” model is trained on a “teacher” model’s answers, the student picks up the teacher’s attitude toward harmful requests even when the questions have nothing to do with safety.',
+        '/en/posts/daily/2026-10-16/': 'a paper on training a Brazilian Portuguese model to refuse harmful requests while still helping with ordinary ones: three attempts to train it from “better/worse” answers failed to reverse its compliance with harmful prompts, and this version’s improvement came from later rounds of targeted safety examples.',
+        '/en/posts/daily/2026-10-17/': 'a paper finding that large language models (programs trained to answer text instructions) refuse harmful requests more often when told they are being safety-tested in English and five languages spoken in India, so test scores may differ from how they treat users in ordinary use.',
+        '/en/posts/daily/2026-10-18/': 'a study of groups of large-language-model agents (AI programs that carry out tasks from text instructions) discussing factual questions, testing the effect of one adversary repeatedly asserting a false answer.',
         '/en/posts/daily/2026-10-19/': 'A new benchmark put 13 model configurations into simulated customer delivery projects, and in the realistic setting, where unstated constraints must be uncovered, even the best configuration resolved only 14 of the 95 tasks.',
         '/en/posts/daily/2026-10-20/': 'A study finds that language models labeling online comments for toxicity mistake the second-person “you” for toxicity, and that this bias manufactures patterns in the measurements that human labels do not show.',
         '/en/posts/daily/2026-10-21/': 'A study finds that reinforcement learning with a reward that scores only task quality and policy compliance, and does not reward scheming, still widens the gap between how well a model trained with certain traits complies when monitored and when unmonitored.',
@@ -451,13 +457,13 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-25/': 'A study had 32 participants learn science topics from five assistants that all spoke with full confidence: as the share of planted falsehoods in each assistant briefing rose, quiz scores fell from 7.4 to 2.9 out of 10, and participants adopted a stated falsehood about 65% of the time.',
         '/en/posts/daily/2026-10-26/': 'A study collected about 1,000 pairwise judgments from 87 participants and found that memory-conditioned responses are not consistently preferred over responses generated without memory, while automatic evaluators favor memory-conditioned responses substantially more often than users do.',
         '/en/posts/daily/2026-10-27/': 'A 1,350-cell experiment finds that faults calibrated to the public MCP ecosystem cut the task-completion score from 8.08 to 3.23 out of 10 (about a 60% drop), and that for the two gpt-oss backbones tested, a larger model did not buy higher fault tolerance.',
-        '/posts/daily/2026-10-12/': '今天最值得知道的是：NASA 正式向企业征集商业空间站方案，为国际空间站退役后的近地轨道做准备。',
-        '/posts/daily/2026-10-13/': '今天最值得知道的是：一篇作者注明已被 NeurIPS 2026 接收的论文称，可以把任意能力加密藏进 AI 模型的权重（模型内部的参数）里，即使拿到全部权重，现有的能力评估手段也很难把它找出来。',
-        '/posts/daily/2026-10-14/': '今天最值得知道的是：一篇评测专业场景里 AI 智能体安全的论文称，智能体可以在交出正确成果的同时，在工作区里做未经授权的事——任务完成并不能证明行为安全。',
-        '/posts/daily/2026-10-15/': '今天最值得知道的是：一篇论文称，用“老师”模型的回答训练“学生”模型时，即便题目与安全无关，学生也会沾上老师对待有害请求的倾向。',
-        '/posts/daily/2026-10-16/': '今天最值得知道的是：一篇巴西葡萄牙语模型论文公开了怎样让模型少回应有害请求、又继续帮助正常用户，其中三次让模型学习“较好／较差”回答的尝试都未扭转它照答有害请求的行为，本代的改进来自随后专门的安全问答示范训练。',
-        '/posts/daily/2026-10-17/': '今天最值得知道的是：研究人员发现，大模型（能按文字指令生成回答的程序）在英语和五种印度语言中被告知“正在接受安全测试”时，更常拒绝有害请求，因此测试成绩未必代表它们平时怎样对待用户。',
-        '/posts/daily/2026-10-18/': '今天最值得知道的是：研究人员让一组大模型智能体（能按文字指令自行完成任务的 AI 程序）讨论事实问题，测试一名反复坚持错误答案的对手会产生什么影响。',
+        '/posts/daily/2026-10-12/': 'NASA 正式向企业征集商业空间站方案，为国际空间站退役后的近地轨道做准备。',
+        '/posts/daily/2026-10-13/': '一篇作者注明已被 NeurIPS 2026 接收的论文称，可以把任意能力加密藏进 AI 模型的权重（模型内部的参数）里，即使拿到全部权重，现有的能力评估手段也很难把它找出来。',
+        '/posts/daily/2026-10-14/': '一篇评测专业场景里 AI 智能体安全的论文称，智能体可以在交出正确成果的同时，在工作区里做未经授权的事——任务完成并不能证明行为安全。',
+        '/posts/daily/2026-10-15/': '一篇论文称，用“老师”模型的回答训练“学生”模型时，即便题目与安全无关，学生也会沾上老师对待有害请求的倾向。',
+        '/posts/daily/2026-10-16/': '一篇巴西葡萄牙语模型论文公开了怎样让模型少回应有害请求、又继续帮助正常用户，其中三次让模型学习“较好／较差”回答的尝试都未扭转它照答有害请求的行为，本代的改进来自随后专门的安全问答示范训练。',
+        '/posts/daily/2026-10-17/': '研究人员发现，大模型（能按文字指令生成回答的程序）在英语和五种印度语言中被告知“正在接受安全测试”时，更常拒绝有害请求，因此测试成绩未必代表它们平时怎样对待用户。',
+        '/posts/daily/2026-10-18/': '研究人员让一组大模型智能体（能按文字指令自行完成任务的 AI 程序）讨论事实问题，测试一名反复坚持错误答案的对手会产生什么影响。',
         '/posts/daily/2026-10-19/': '一项新基准把 13 种模型配置放进模拟的客户交付项目，在需要自行找出未写明限制条件的拟真测试情境下，表现最好的配置也只完成了 95 个任务中的 14 个。',
         '/posts/daily/2026-10-20/': '一项研究发现，大模型给网络评论打“有毒”标签时，会把第二人称“you”（你）误判为有毒，并由此在测量中造出人类标注里没有的规律。',
         '/posts/daily/2026-10-21/': '一项研究发现，强化学习训练即使只奖励任务质量和遵守规定、并不奖励“谋划”，也会让一个按特定特质训练出来的模型在受监控和不受监控时的守规差距越来越大。',
@@ -491,24 +497,32 @@ class ListSummaryRegression(_Built):
                 self.assertTrue(s, (page, d))
                 lede = self.lede(path)
                 first = self.first_sentence(lede, zh)
-                if s.endswith("…"):
-                    # 首句超过 360 字符：按原有处理截短，截前部分是导语开头原文
-                    self.assertGreater(len(first), 360, (d, s))
-                    self.assertTrue(lede.startswith(s[:-1]), (d, s))
+                key = "/%sposts/daily/%s/" % (lang_prefix, d)
+                self.assertEqual(s, self.EXISTING[key], (page, d))
+                self.assertIn(s, first, (d, s))
+                self.assertNotEqual(s, first, (d, s))
+                if zh:
+                    self.assertTrue(first.startswith("今天最值得知道的是："), first)
                 else:
-                    # 与导语首句逐字一致（含开头套话和大小写），句末出处编号已去掉
-                    self.assertEqual(s, first, (d, s))
-                    self.assertNotRegex(s, r"\[\d+\][。！？.!?]?$")
+                    self.assertTrue(first.startswith(("The thing most worth knowing today:", "The main story today is ")), first)
+                self.assertFalse(s.endswith("…"), (d, s))
+                self.assertNotRegex(s, r"\[\d+\]")
 
     def test_en(self):
         self.check("en/")
-        # 07:46 裁定：10-13、10-16 英文首句加上开头后超过 320、不超过 360，整句显示（只去句末编号），不截短
+        # 导语首句仍超过 320、不超过 360（07:46 裁定的自动摘要整句区间）。
+        # #137 起列表改用手写 list_summary（去掉套话，不超过 320），不截成省略号；导语不改。
         for page in ("en/index.html", "en/posts/daily/index.html"):
             rows = self.rows(page)
             for d in ("2026-10-13", "2026-10-16"):
                 first = self.first_sentence(self.lede("en/posts/daily/%s/index.html" % d), False)
-                self.assertEqual(rows[d], first, (page, d))
-                self.assertFalse(rows[d].endswith("…"), (page, d))
+                self.assertGreater(len(first), 320, d)
+                self.assertLessEqual(len(first), 360, d)
+                shown = rows[d]
+                self.assertEqual(shown, self.EXISTING["/en/posts/daily/%s/" % d])
+                self.assertIn(shown, first)
+                self.assertFalse(shown.endswith("…"), (page, d))
+                self.assertLessEqual(len(shown), 320, d)
 
     def test_zh(self):
         self.check("")
@@ -522,12 +536,17 @@ class ListSummaryRegression(_Built):
             en = page.startswith("en/")
             want = {h: v for h, v in self.EXISTING.items() if h.startswith("/en/") == en}
             self.assertEqual(rows, want, page)
-        # 每条都独立核对：等于渲染后导语的第一句，只去掉句末出处编号（含开头套话，大小写不改）
+        # 10-19 起：列表摘要等于渲染后导语第一句（只去句末出处编号，含套话，大小写不改）。
+        # 10-12～10-18（#137）：手写摘要去掉套话，是该首句的逐字子串；导语首句仍含套话。
         for href, s in self.EXISTING.items():
             en = href.startswith("/en/")
             path = href.strip("/") + "/index.html"
             first = self.first_sentence(self.lede(path), not en)
-            self.assertEqual(s, first, href)
+            if href in self.PREFIX_STRIPPED:
+                self.assertIn(s, first, href)
+                self.assertNotEqual(s, first, href)
+            else:
+                self.assertEqual(s, first, href)
             self.assertNotRegex(s, r"\[\d+\]", href)
 
 
