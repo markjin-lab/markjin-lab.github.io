@@ -458,6 +458,7 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-26/': 'A study collected about 1,000 pairwise judgments from 87 participants and found that memory-conditioned responses are not consistently preferred over responses generated without memory, while automatic evaluators favor memory-conditioned responses substantially more often than users do.',
         '/en/posts/daily/2026-10-27/': 'A 1,350-cell experiment finds that faults calibrated to the public MCP ecosystem cut the task-completion score from 8.08 to 3.23 out of 10 (about a 60% drop), and that for the two gpt-oss backbones tested, a larger model did not buy higher fault tolerance.',
         '/en/posts/daily/2026-10-28/': 'A comparison on 90 RCAtlas cases finds that three simple harnesses that prescribe none of the model’s calls reach PR@1 of 65–77% on three mid-tier models, ahead of five published LLM root-cause-analysis agents (16–53%).',
+        '/en/posts/daily/2026-10-29/': 'A comparison on MiniWoB++ finds that merely reversing the order of the observation fields lowers a trained model’s success from 85.0% to 19.2%, even though every optimal decision stays the same.',
         '/posts/daily/2026-10-12/': 'NASA 正式向企业征集商业空间站方案，为国际空间站退役后的近地轨道做准备。',
         '/posts/daily/2026-10-13/': '一篇作者注明已被 NeurIPS 2026 接收的论文称，可以把任意能力加密藏进 AI 模型的权重（模型内部的参数）里，即使拿到全部权重，现有的能力评估手段也很难把它找出来。',
         '/posts/daily/2026-10-14/': '一篇评测专业场景里 AI 智能体安全的论文称，智能体可以在交出正确成果的同时，在工作区里做未经授权的事——任务完成并不能证明行为安全。',
@@ -475,6 +476,7 @@ class ListSummaryRegression(_Built):
         '/posts/daily/2026-10-26/': '一项研究收集约 1,000 对来自 87 名参与者的成对判断，发现带记忆条件生成的回复并不总比不带记忆的更受用户偏好，自动评估器也比用户更常偏向带记忆的回复。',
         '/posts/daily/2026-10-27/': '一项覆盖 1,350 格的实验发现，按公开 MCP 生态校准的故障使任务完成分从 10 分制的 8.08 降到 3.23（约降 60%），且在所测两个 gpt-oss 骨干上，更大模型并未换来更高的故障耐受。',
         '/posts/daily/2026-10-28/': '一项在 RCAtlas 90 个案例上的比较发现，三种不规定模型调用的简单 Harness，在三个中档模型上的 PR@1 达到 65–77%，高于五篇已发表 LLM 根因分析智能体（16–53%）。',
+        '/posts/daily/2026-10-29/': '一项在 MiniWoB++ 上的比较发现，仅把观察字段顺序反过来，就使已训练模型的成功率从 85.0% 降到 19.2%，尽管最优决策本身不变。',
     }
 
     def lede(self, path):
