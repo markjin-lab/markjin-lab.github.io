@@ -477,6 +477,8 @@ class ListSummaryRegression(_Built):
         '/posts/daily/2026-10-27/': '一项覆盖 1,350 格的实验发现，按公开 MCP 生态校准的故障使任务完成分从 10 分制的 8.08 降到 3.23（约降 60%），且在所测两个 gpt-oss 骨干上，更大模型并未换来更高的故障耐受。',
         '/posts/daily/2026-10-28/': '一项在 RCAtlas 90 个案例上的比较发现，三种不规定模型调用的简单 Harness，在三个中档模型上的 PR@1 达到 65–77%，高于五篇已发表 LLM 根因分析智能体（16–53%）。',
         '/posts/daily/2026-10-29/': '一项在 MiniWoB++ 上的比较发现，仅把观察字段顺序反过来，就使已训练模型的成功率从 85.0% 降到 19.2%，尽管最优决策本身不变。',
+        '/posts/daily/2026-10-30/': '在 4B 参数稀疏 MoE 训练上，EnergyCal-MuonH 相对开发期选定的更低学习率 MuonH 配方，把平均阈值化损失尖峰负担降了 99.51%，并把最终几何平均困惑度再降 4.06%。',
+        '/en/posts/daily/2026-10-30/': 'On a 4B-parameter sparse MoE, EnergyCal-MuonH cuts mean thresholded loss-spike burden by 99.51% and final geometric-mean perplexity by 4.06% versus a development-selected, lower-learning-rate MuonH recipe.',
     }
 
     def lede(self, path):
