@@ -1,0 +1,10 @@
+{{- /* External learn video embed: src, poster required; caption optional. */ -}}
+{{- $src := .Get "src" -}}
+{{- $poster := .Get "poster" -}}
+{{- $caption := .Get "caption" | default "" -}}
+<figure class="learn-video" style="margin:1.25rem 0">
+<video controls playsinline preload="metadata" poster="{{ $poster }}" style="max-width:min(100%,360px);width:100%;aspect-ratio:9/16;background:#000;display:block;border-radius:4px">
+<source src="{{ $src }}" type="video/mp4">
+</video>
+{{- if $caption }}<figcaption class="meta" style="margin-top:.4rem;max-width:min(100%,360px)">{{ $caption }}</figcaption>{{ end }}
+</figure>
