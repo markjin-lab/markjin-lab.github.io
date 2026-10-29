@@ -24,13 +24,17 @@ name = "每日信号"
 url = "/posts/daily/"
 weight = 1
 [[languages.zh.menus.main]]
+name = "经济学习"
+url = "/learn/"
+weight = 2
+[[languages.zh.menus.main]]
 name = "专题"
 url = "/topics/"
-weight = 2
+weight = 3
 [[languages.zh.menus.main]]
 name = "关于"
 url = "/about/"
-weight = 3
+weight = 4
 
 [languages.en]
 weight = 2
@@ -42,10 +46,14 @@ name = "Daily signals"
 url = "/en/posts/daily/"
 weight = 1
 [[languages.en.menus.main]]
+name = "Economic learning"
+url = "/en/learn/"
+weight = 2
+[[languages.en.menus.main]]
 name = "Topics"
 url = "/en/topics/"
-weight = 2
+weight = 3
 [[languages.en.menus.main]]
 name = "About"
 url = "/en/about/"
-weight = 3
+weight = 4
