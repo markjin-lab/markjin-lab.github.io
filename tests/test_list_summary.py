@@ -479,6 +479,8 @@ class ListSummaryRegression(_Built):
         '/posts/daily/2026-10-29/': '一项在 MiniWoB++ 上的比较发现，仅把观察字段顺序反过来，就使已训练模型的成功率从 85.0% 降到 19.2%，尽管最优决策本身不变。',
         '/posts/daily/2026-10-30/': '在 4B 参数稀疏 MoE 训练上，EnergyCal-MuonH 相对开发期选定的更低学习率 MuonH 配方，把平均阈值化损失尖峰负担降了 99.51%，并把最终几何平均困惑度再降 4.06%。',
         '/en/posts/daily/2026-10-30/': 'On a 4B-parameter sparse MoE, EnergyCal-MuonH cuts mean thresholded loss-spike burden by 99.51% and final geometric-mean perplexity by 4.06% versus a development-selected, lower-learning-rate MuonH recipe.',
+        '/posts/daily/2026-10-31/': '在困难逻辑游戏上，PIVOT 把最佳基线的平均 avg@8 从 19.5% 几乎翻倍到 35.6%。',
+        '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
     }
 
     def lede(self, path):
