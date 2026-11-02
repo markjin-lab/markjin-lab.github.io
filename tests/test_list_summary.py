@@ -481,6 +481,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-30/': 'On a 4B-parameter sparse MoE, EnergyCal-MuonH cuts mean thresholded loss-spike burden by 99.51% and final geometric-mean perplexity by 4.06% versus a development-selected, lower-learning-rate MuonH recipe.',
         '/posts/daily/2026-10-31/': '在困难逻辑游戏上，PIVOT 把最佳基线的平均 avg@8 从 19.5% 几乎翻倍到 35.6%。',
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
+        '/posts/daily/2026-11-01/': '在 GAIA 基准上，CORAL 配合 8B 模型达到 42.8% 平均准确率，输入 token 消耗比 ReAct 智能体少 6–7 倍。',
+        '/en/posts/daily/2026-11-01/': 'On the GAIA benchmark, CORAL with an 8B model achieves 42.8% average accuracy while using 6–7× fewer input tokens than a ReAct agent.',
     }
 
     def lede(self, path):
@@ -536,13 +538,17 @@ class ListSummaryRegression(_Built):
         self.check("")
 
     def test_existing_pages_exact(self):
-        # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行
+        # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-01 起 10-12 不再出现在首页，仍在栏目索引里。
+        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/")
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
             rows = {href: (html.unescape(x) if x else None) for href, x in ROW.findall(s)}
             en = page.startswith("en/")
-            want = {h: v for h, v in self.EXISTING.items() if h.startswith("/en/") == en}
+            home = page in ("index.html", "en/index.html")
+            want = {h: v for h, v in self.EXISTING.items()
+                    if h.startswith("/en/") == en and not (home and h in dropped_home)}
             self.assertEqual(rows, want, page)
         # 10-19 起：列表摘要等于渲染后导语第一句（只去句末出处编号，含套话，大小写不改）。
         # 10-12～10-18（#137）：手写摘要去掉套话，是该首句的逐字子串；导语首句仍含套话。
