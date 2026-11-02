@@ -481,6 +481,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-30/': 'On a 4B-parameter sparse MoE, EnergyCal-MuonH cuts mean thresholded loss-spike burden by 99.51% and final geometric-mean perplexity by 4.06% versus a development-selected, lower-learning-rate MuonH recipe.',
         '/posts/daily/2026-10-31/': '在困难逻辑游戏上，PIVOT 把最佳基线的平均 avg@8 从 19.5% 几乎翻倍到 35.6%。',
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
+        '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
+        '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
     }
 
     def lede(self, path):
@@ -536,13 +538,17 @@ class ListSummaryRegression(_Built):
         self.check("")
 
     def test_existing_pages_exact(self):
-        # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行
+        # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-03 起 10-12 不再出现在首页，仍在栏目索引里。
+        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/")
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
             rows = {href: (html.unescape(x) if x else None) for href, x in ROW.findall(s)}
             en = page.startswith("en/")
-            want = {h: v for h, v in self.EXISTING.items() if h.startswith("/en/") == en}
+            home = page in ("index.html", "en/index.html")
+            want = {h: v for h, v in self.EXISTING.items()
+                    if h.startswith("/en/") == en and not (home and h in dropped_home)}
             self.assertEqual(rows, want, page)
         # 10-19 起：列表摘要等于渲染后导语第一句（只去句末出处编号，含套话，大小写不改）。
         # 10-12～10-18（#137）：手写摘要去掉套话，是该首句的逐字子串；导语首句仍含套话。
