@@ -483,6 +483,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
         '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
+        '/posts/daily/2026-11-04/': '在 13 个稠密 LLM、六大家族于 NVIDIA H100 上的轨迹上，SIMPLE 达到 R² = 0.969、MAPE 11.97%，比现有先进拟合模型低 3.1–3.5 倍，且无需按模型单独标定。',
+        '/en/posts/daily/2026-11-04/': 'Over traces of 13 dense LLMs from six families on NVIDIA H100 GPUs, SIMPLE attains R² = 0.969 and 11.97% MAPE, 3.1–3.5× below the SOTA, without per-LLM calibration.',
     }
 
     def lede(self, path):
@@ -501,7 +503,11 @@ class ListSummaryRegression(_Built):
         zh = lang_prefix == ""
         for page in ("index.html", "posts/daily/index.html"):
             rows = self.rows(lang_prefix + page)
+            home = page == "index.html"
             for d in self.DATES:
+                # 首页 first 20。2026-11-04 起 10-13 不再出现在首页，仍在栏目索引。
+                if home and d == "2026-10-13":
+                    continue
                 path = "%sposts/daily/%s/index.html" % (lang_prefix, d)
                 s = rows.get(d)
                 self.assertTrue(s, (page, d))
@@ -524,7 +530,9 @@ class ListSummaryRegression(_Built):
         # #137 起列表改用手写 list_summary（去掉套话，不超过 320），不截成省略号；导语不改。
         for page in ("en/index.html", "en/posts/daily/index.html"):
             rows = self.rows(page)
-            for d in ("2026-10-13", "2026-10-16"):
+            # 2026-11-04 起首页 first 20 不再含 10-13；该日仍在栏目索引核对。
+            dates = ("2026-10-16",) if page == "en/index.html" else ("2026-10-13", "2026-10-16")
+            for d in dates:
                 first = self.first_sentence(self.lede("en/posts/daily/%s/index.html" % d), False)
                 self.assertGreater(len(first), 320, d)
                 self.assertLessEqual(len(first), 360, d)
@@ -539,8 +547,9 @@ class ListSummaryRegression(_Built):
 
     def test_existing_pages_exact(self):
         # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
-        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-03 起 10-12 不再出现在首页，仍在栏目索引里。
-        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/")
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-04 起 10-12 与 10-13 不再出现在首页，仍在栏目索引里。
+        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/",
+                        "/posts/daily/2026-10-13/", "/en/posts/daily/2026-10-13/")
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
