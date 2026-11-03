@@ -483,8 +483,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
         '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
-        '/posts/daily/2026-11-04/': '在 13 个稠密 LLM、六大家族于 NVIDIA H100 上的轨迹上，SIMPLE 达到 R² = 0.969、MAPE 11.97%，比现有先进拟合模型低 3.1–3.5 倍，且无需按模型单独标定。',
-        '/en/posts/daily/2026-11-04/': 'Over traces of 13 dense LLMs from six families on NVIDIA H100 GPUs, SIMPLE attains R² = 0.969 and 11.97% MAPE, 3.1–3.5× below the SOTA, without per-LLM calibration.',
+        '/posts/daily/2026-11-04/': 'SIMPLE 是一条用四个参数估算大语言模型推理能耗的公式；在 NVIDIA H100 上测试六个家族的 13 个模型时，它无需逐模型标定，平均绝对百分比误差为 11.97%，比现有最佳拟合模型低 3.1–3.5 倍。',
+        '/en/posts/daily/2026-11-04/': 'SIMPLE is a four-parameter formula for estimating energy used by large language models; across 13 models from six families on NVIDIA H100 GPUs, its average absolute percentage error was 11.97%, 3.1–3.5 times lower than the best existing fitted model, without tuning it for each model.',
     }
 
     def lede(self, path):
