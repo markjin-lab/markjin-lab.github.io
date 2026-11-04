@@ -431,7 +431,7 @@ class ListSummaryRegression(_Built):
     自动摘要只有首句超过 360 字符时才截短（以「…」结尾）；本批手写摘要不超过 320。"""
     CONTENT = ROOT / "content"
     WITH_DATA = True
-    DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
+    DATES = ("2026-10-16", "2026-10-17", "2026-10-18")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -526,7 +526,8 @@ class ListSummaryRegression(_Built):
         # #137 起列表改用手写 list_summary（去掉套话，不超过 320），不截成省略号；导语不改。
         for page in ("en/index.html", "en/posts/daily/index.html"):
             rows = self.rows(page)
-            for d in ("2026-10-13", "2026-10-16"):
+            # 2026-11-05 起首页不再含 10-13。渲染首句仍在 (320, 360] 且仍在英文首页的只有 10-16（337）；10-17 为 302。
+            for d in ("2026-10-16",):
                 first = self.first_sentence(self.lede("en/posts/daily/%s/index.html" % d), False)
                 self.assertGreater(len(first), 320, d)
                 self.assertLessEqual(len(first), 360, d)
@@ -541,8 +542,11 @@ class ListSummaryRegression(_Built):
 
     def test_existing_pages_exact(self):
         # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
-        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-03 起 10-12 不再出现在首页，仍在栏目索引里。
-        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/")
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-05 起 10-12 与 10-13 不再出现在首页，仍在栏目索引里。
+        dropped_home = (
+            "/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/",
+            "/posts/daily/2026-10-13/", "/en/posts/daily/2026-10-13/",
+        )
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
