@@ -483,6 +483,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
         '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
+        '/posts/daily/2026-11-05/': 'LoopVQ 是一种面向循环 Transformer 的键值缓存向量量化方法；在 SGLang 上实现后，32K 上下文下解码时延约减半，并在 1.4B 与 2.6B 的 Ouro 模型上相对 BF16 基线把峰值服务吞吐最高抬到约 4.3 倍与 6.1 倍。',
+        '/en/posts/daily/2026-11-05/': 'LoopVQ is a vector-quantization method for the key–value cache of looped transformers; implemented in SGLang, it nearly halves decode latency at a 32K-token context and raises peak serving throughput by up to 4.3× and 6.1× on the 1.4B and 2.6B Ouro models versus a BF16 baseline.',
     }
 
     def lede(self, path):
