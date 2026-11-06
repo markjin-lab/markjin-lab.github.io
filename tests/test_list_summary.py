@@ -483,8 +483,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
         '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
-        '/posts/daily/2026-11-06/': 'Visual Token Routing（VTR）是一种面向计算机使用智能体的稀疏视觉表征联合训练框架；仅 2000 步训练后，在 OSWorld 等任务上匹配全分辨率模型，并用 2.5–5.8 倍更少的视觉 token，把推理成本最高降到约 3.3 倍、prefill 最高加速约 2.9 倍。',
-        '/en/posts/daily/2026-11-06/': 'Visual Token Routing (VTR) is a joint-training framework for sparse visual representations in computer-use agents; after 2,000 training steps, it matches a full-resolution model on OSWorld-class tasks while using 2.5–5.8× fewer visual tokens, cutting inference cost by up to 3.3× and speeding up prefill by up to 2.9×.',
+        '/posts/daily/2026-11-06/': 'Visual Token Routing（VTR）让代人操作电脑的程序只处理截图中的部分图像信息；摘要称，训练 2000 步后，它在 OSWorld 等测试中达到全分辨率模型的表现，图像信息单元用量减少 2.5–5.8 倍，推理成本最多降至原来的约三成，生成前的输入处理最高加快约 2.9 倍。',
+        '/en/posts/daily/2026-11-06/': 'Visual Token Routing (VTR) lets agents that operate computers process fewer pieces of screenshots; after 2,000 training steps, it matches the full-resolution model on OSWorld and other tests with 2.5–5.8× fewer image units, cutting inference cost by up to 3.3× and speeding up pre-answer input processing by up to 2.9×.',
     }
 
     def lede(self, path):
