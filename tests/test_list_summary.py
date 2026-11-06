@@ -483,8 +483,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
         '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
-        '/posts/daily/2026-11-07/': '行为相同的小网络可以有不同的内部机制：一项实验中，循环网络与前馈网络在给定响应延迟下的输入输出规律相同，整合信息却分别为 0.28 比特与 0 比特，内部记录在 4–53 次试次内将它们区分开。',
-        '/en/posts/daily/2026-11-07/': 'Identical input–output behavior can hide different internal mechanisms: one experiment separated a recurrent and a feed-forward network carrying 0.28 and 0 bits within 4–53 trials.',
+        '/posts/daily/2026-11-07/': '一项小型网络实验发现：两个网络在给定响应延迟下的输入输出规律相同，论文给出的内部指标却分别为 0.28 比特和 0 比特；内部记录在 4–53 次试次内将它们区分开。',
+        '/en/posts/daily/2026-11-07/': 'In one experiment, two small networks had identical input–output laws at their response delay, but the measured internal values were 0.28 and 0 bits; internal recordings separated them within 4–53 trials.',
     }
 
     def lede(self, path):
