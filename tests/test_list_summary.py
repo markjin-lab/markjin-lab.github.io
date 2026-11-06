@@ -431,7 +431,7 @@ class ListSummaryRegression(_Built):
     自动摘要只有首句超过 360 字符时才截短（以「…」结尾）；本批手写摘要不超过 320。"""
     CONTENT = ROOT / "content"
     WITH_DATA = True
-    DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
+    DATES = ("2026-10-16", "2026-10-17", "2026-10-18")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -483,6 +483,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
         '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
+        '/posts/daily/2026-11-07/': '行为相同的小网络可以有不同的内部机制：一项实验中，循环网络与前馈网络在给定响应延迟下的输入输出规律相同，整合信息却分别为 0.28 比特与 0 比特，内部记录在 4–53 次试次内将它们区分开。',
+        '/en/posts/daily/2026-11-07/': 'Identical input–output behavior can hide different internal mechanisms: one experiment separated a recurrent and a feed-forward network carrying 0.28 and 0 bits within 4–53 trials.',
     }
 
     def lede(self, path):
@@ -524,7 +526,7 @@ class ListSummaryRegression(_Built):
         # #137 起列表改用手写 list_summary（去掉套话，不超过 320），不截成省略号；导语不改。
         for page in ("en/index.html", "en/posts/daily/index.html"):
             rows = self.rows(page)
-            for d in ("2026-10-13", "2026-10-16"):
+            for d in ("2026-10-16",):
                 first = self.first_sentence(self.lede("en/posts/daily/%s/index.html" % d), False)
                 self.assertGreater(len(first), 320, d)
                 self.assertLessEqual(len(first), 360, d)
@@ -539,8 +541,9 @@ class ListSummaryRegression(_Built):
 
     def test_existing_pages_exact(self):
         # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
-        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-03 起 10-12 不再出现在首页，仍在栏目索引里。
-        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/")
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-03 起 10-12 不再出现在首页；2026-11-07 起 10-13 亦被挤出首页，仍在栏目索引里。
+        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/",
+                        "/posts/daily/2026-10-13/", "/en/posts/daily/2026-10-13/")
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
