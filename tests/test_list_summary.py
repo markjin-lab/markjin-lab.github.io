@@ -431,7 +431,7 @@ class ListSummaryRegression(_Built):
     自动摘要只有首句超过 360 字符时才截短（以「…」结尾）；本批手写摘要不超过 320。"""
     CONTENT = ROOT / "content"
     WITH_DATA = True
-    DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
+    DATES = ("2026-10-16", "2026-10-17", "2026-10-18")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -483,6 +483,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
         '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
+        '/posts/daily/2026-11-06/': 'Visual Token Routing（VTR）让代人操作电脑的程序只处理截图中的部分图像信息；摘要称，训练 2000 步后，它在 OSWorld 等测试中达到全分辨率模型的表现，图像信息单元用量减少 2.5–5.8 倍，推理成本最多降至原来的约三成，生成前的输入处理最高加快约 2.9 倍。',
+        '/en/posts/daily/2026-11-06/': 'Visual Token Routing (VTR) lets agents that operate computers process fewer pieces of screenshots; after 2,000 training steps, it matches the full-resolution model on OSWorld and other tests with 2.5–5.8× fewer image units, cutting inference cost by up to 3.3× and speeding up pre-answer input processing by up to 2.9×.',
     }
 
     def lede(self, path):
@@ -524,7 +526,8 @@ class ListSummaryRegression(_Built):
         # #137 起列表改用手写 list_summary（去掉套话，不超过 320），不截成省略号；导语不改。
         for page in ("en/index.html", "en/posts/daily/index.html"):
             rows = self.rows(page)
-            for d in ("2026-10-13", "2026-10-16"):
+            # 2026-11-06 起首页不再含 10-13。渲染首句仍在 (320, 360] 且仍在英文首页的只有 10-16（337）；10-17 为 302。
+            for d in ("2026-10-16",):
                 first = self.first_sentence(self.lede("en/posts/daily/%s/index.html" % d), False)
                 self.assertGreater(len(first), 320, d)
                 self.assertLessEqual(len(first), 360, d)
@@ -539,8 +542,11 @@ class ListSummaryRegression(_Built):
 
     def test_existing_pages_exact(self):
         # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
-        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-03 起 10-12 不再出现在首页，仍在栏目索引里。
-        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/")
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-06 起 10-12 与 10-13 不再出现在首页，仍在栏目索引里。
+        dropped_home = (
+            "/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/",
+            "/posts/daily/2026-10-13/", "/en/posts/daily/2026-10-13/",
+        )
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
