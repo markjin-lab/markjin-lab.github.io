@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -497,6 +497,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-08/': 'A preregistered study finds that after a runtime or API migration, a release gate requiring all assertions to pass on typical inputs lets through 0.410 of wrong large language model repairs, and that one edge input written from the release note cuts this to 0.065.',
         '/posts/daily/2026-11-09/': '一个多模态电路板布线智能体在 247 块合成与真实电路板上测试，在 PCBWorld-Bench 四个测试子集上的干净通过率分别为 100%、94.9%、100% 和 40%，在三个真实电路板子集上比评测中最好的基线高 13.9、36 和 10 个百分点。',
         '/en/posts/daily/2026-11-09/': 'A multimodal circuit-board routing agent tested on 247 synthetic and real-world boards achieves clean-pass rates of 100%, 94.9%, 100% and 40% on four PCBWorld-Bench test splits, and beats the best evaluated baseline on the three real-world subsets by 13.9, 36 and 10 percentage points.',
+        '/posts/daily/2026-11-10/': 'BitDecoding-FP4 让大语言模型的 KV 缓存直接以 4 位浮点格式解码，在 NVIDIA B300 上服务 Qwen3-4B 与 Qwen3-30B-A3B 时，峰值服务吞吐量是 BF16 KV 缓存的 2.4–3.0 倍，NVFP4 下准确率与 BF16 相差在 0.5 分以内。',
+        '/en/posts/daily/2026-11-10/': 'BitDecoding-FP4 lets large language models decode directly from a 4-bit floating-point KV cache; serving Qwen3-4B and Qwen3-30B-A3B on NVIDIA B300, it delivers 2.4–3.0 times higher peak serving throughput than a BF16 KV cache, while staying within 0.5 points of BF16 KV accuracy with NVFP4.',
     }
 
     def lede(self, path):
