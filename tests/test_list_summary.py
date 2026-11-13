@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -495,6 +495,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-07/': 'An audit finds issues in roughly 30% of Terminal-Bench 2.0, a coding-agent benchmark that underwent extensive human and LM-assisted review before release; the repaired Terminal-Bench 2.1 raises accuracy by over 10 percentage points and moves leaderboard positions by up to three ranks.',
         '/posts/daily/2026-11-08/': '一项预注册研究发现，运行时或 API 迁移后，用典型输入、要求全部断言通过的发布检查，会放行 0.410 的由大语言模型给出的错误修复；按版本说明写一条边界输入，就把这一比例降到 0.065。',
         '/en/posts/daily/2026-11-08/': 'A preregistered study finds that after a runtime or API migration, a release gate requiring all assertions to pass on typical inputs lets through 0.410 of wrong large language model repairs, and that one edge input written from the release note cuts this to 0.065.',
+        '/posts/daily/2026-11-09/': '一个多模态电路板布线智能体在 247 块合成与真实电路板上测试，在 PCBWorld-Bench 四个测试子集上的干净通过率分别为 100%、94.9%、100% 和 40%，在三个真实电路板子集上比评测中最好的基线高 13.9、36 和 10 个百分点。',
+        '/en/posts/daily/2026-11-09/': 'A multimodal circuit-board routing agent tested on 247 synthetic and real-world boards achieves clean-pass rates of 100%, 94.9%, 100% and 40% on four PCBWorld-Bench test splits, and beats the best evaluated baseline on the three real-world subsets by 13.9, 36 and 10 percentage points.',
     }
 
     def lede(self, path):
