@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -483,6 +483,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-10-30/': 'On a 4B-parameter sparse MoE, EnergyCal-MuonH cuts mean thresholded loss-spike burden by 99.51% and final geometric-mean perplexity by 4.06% versus a development-selected, lower-learning-rate MuonH recipe.',
         '/posts/daily/2026-10-31/': '在困难逻辑游戏上，PIVOT 把最佳基线的平均 avg@8 从 19.5% 几乎翻倍到 35.6%。',
         '/en/posts/daily/2026-10-31/': 'Across hard logic games, PIVOT nearly doubles mean avg@8 from 19.5% for the best-performing baseline to 35.6%.',
+        '/posts/daily/2026-11-01/': '一项研究从 2026 年 2 月以来 arXiv 数学论文中收集猜想，随机抽取 200 个交给前沿 GPT 模型，模型对约 60% 的猜想给出了候选解答，其中反例约为证明的 1.3 倍，作者没有对这些解答做专家验证。',
+        '/en/posts/daily/2026-11-01/': 'A study collected conjectures from arXiv mathematics papers since February 2026 and gave a random sample of 200 to frontier GPT models, which produced candidate solutions for roughly 60% of them, with counterexamples about 1.3 times more common than proofs; the authors did not attempt expert verification.',
         '/posts/daily/2026-11-03/': '在 1000 万 token 上下文下，D-LSA 在 GLM-5.3-FLASH（QWEN-3.8-27B）上把单层注意力相对其原稀疏注意力（全注意力）的 prefill 加速到 22.7 倍（72.4 倍）、decode 加速到 4.6 倍（42.5 倍）。',
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
         '/posts/daily/2026-11-04/': 'SIMPLE 是一条用四个参数估算大语言模型推理能耗的公式；在 NVIDIA H100 上测试六个家族的 13 个模型时，它无需逐模型标定，平均绝对百分比误差为 11.97%，比现有最佳拟合模型低 3.1–3.5 倍。',
