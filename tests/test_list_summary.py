@@ -432,6 +432,8 @@ class ListSummaryRegression(_Built):
     CONTENT = ROOT / "content"
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
+    # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -485,6 +487,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
         '/posts/daily/2026-11-04/': 'SIMPLE 是一条用四个参数估算大语言模型推理能耗的公式；在 NVIDIA H100 上测试六个家族的 13 个模型时，它无需逐模型标定，平均绝对百分比误差为 11.97%，比现有最佳拟合模型低 3.1–3.5 倍。',
         '/en/posts/daily/2026-11-04/': 'SIMPLE is a four-parameter formula for estimating energy used by large language models; across 13 models from six families on NVIDIA H100 GPUs, its average absolute percentage error was 11.97%, 3.1–3.5 times lower than the best existing fitted model, without tuning it for each model.',
+        '/posts/daily/2026-11-05/': '一项研究表明，数据中心只要把大语言模型查询在不同模型实例之间动态分配、不推迟任何请求，就能为电网提供可调的用电量；在一座 10,000 块 H100 GPU 数据中心的真实轨迹仿真中，可调幅度最高达总用电的 16%，约 10 秒内完成 90% 的目标降幅。',
+        '/en/posts/daily/2026-11-05/': 'Routing large language model queries across model instances, without deferring requests, lets a datacenter offer the grid adjustable power demand; in a trace-driven simulation of a 10,000-H100-GPU datacenter, flexibility reached up to 16% of total power use, with 90% of the reduction in about 10 seconds.',
     }
 
     def lede(self, path):
@@ -505,8 +509,8 @@ class ListSummaryRegression(_Built):
             rows = self.rows(lang_prefix + page)
             home = page == "index.html"
             for d in self.DATES:
-                # 首页 first 20。2026-11-04 起 10-13 不再出现在首页，仍在栏目索引。
-                if home and d == "2026-10-13":
+                # 首页 first 20：HOME_DROPPED_DATES 中的日期不再出现在首页，仍在栏目索引。
+                if home and d in self.HOME_DROPPED_DATES:
                     continue
                 path = "%sposts/daily/%s/index.html" % (lang_prefix, d)
                 s = rows.get(d)
@@ -530,8 +534,9 @@ class ListSummaryRegression(_Built):
         # #137 起列表改用手写 list_summary（去掉套话，不超过 320），不截成省略号；导语不改。
         for page in ("en/index.html", "en/posts/daily/index.html"):
             rows = self.rows(page)
-            # 2026-11-04 起首页 first 20 不再含 10-13；该日仍在栏目索引核对。
-            dates = ("2026-10-16",) if page == "en/index.html" else ("2026-10-13", "2026-10-16")
+            # 首页 first 20 不含 HOME_DROPPED_DATES；这些日期仍在栏目索引核对。
+            dates = tuple(d for d in ("2026-10-13", "2026-10-16")
+                          if not (page == "en/index.html" and d in self.HOME_DROPPED_DATES))
             for d in dates:
                 first = self.first_sentence(self.lede("en/posts/daily/%s/index.html" % d), False)
                 self.assertGreater(len(first), 320, d)
@@ -547,9 +552,9 @@ class ListSummaryRegression(_Built):
 
     def test_existing_pages_exact(self):
         # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
-        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-04 起 10-12 与 10-13 不再出现在首页，仍在栏目索引里。
-        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/",
-                        "/posts/daily/2026-10-13/", "/en/posts/daily/2026-10-13/")
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。HOME_DROPPED_DATES 中的日期不再出现在首页，仍在栏目索引里。
+        dropped_home = tuple(p % d for d in self.HOME_DROPPED_DATES
+                             for p in ("/posts/daily/%s/", "/en/posts/daily/%s/"))
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
