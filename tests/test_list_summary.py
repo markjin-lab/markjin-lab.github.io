@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -493,6 +493,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-06/': 'A new benchmark has coding agents design specialized large language model serving systems and scores them by latency-qualified token value per dollar of GPU cost; Claude Sonnet 5.5 reaches 2.97 dollars per dollar on Gemma E4B, 4.87 times the vLLM reference.',
         '/posts/daily/2026-11-07/': '一项审计发现，发布前经过大量人工与语言模型辅助审查的编程智能体基准 Terminal-Bench 2.0，约 30% 存在问题；修复后的 Terminal-Bench 2.1 使准确率提高 10 个百分点以上，排行榜名次最多变动三位。',
         '/en/posts/daily/2026-11-07/': 'An audit finds issues in roughly 30% of Terminal-Bench 2.0, a coding-agent benchmark that underwent extensive human and LM-assisted review before release; the repaired Terminal-Bench 2.1 raises accuracy by over 10 percentage points and moves leaderboard positions by up to three ranks.',
+        '/posts/daily/2026-11-08/': '一项预注册研究发现，运行时或 API 迁移后，用典型输入、要求全部断言通过的发布检查，会放行 0.410 的由大语言模型给出的错误修复；按版本说明写一条边界输入，就把这一比例降到 0.065。',
+        '/en/posts/daily/2026-11-08/': 'A preregistered study finds that after a runtime or API migration, a release gate requiring all assertions to pass on typical inputs lets through 0.410 of wrong large language model repairs, and that one edge input written from the release note cuts this to 0.065.',
     }
 
     def lede(self, path):
