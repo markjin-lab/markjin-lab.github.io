@@ -432,6 +432,8 @@ class ListSummaryRegression(_Built):
     CONTENT = ROOT / "content"
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
+    # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -485,6 +487,22 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
         '/posts/daily/2026-11-04/': 'SIMPLE 是一条用四个参数估算大语言模型推理能耗的公式；在 NVIDIA H100 上测试六个家族的 13 个模型时，它无需逐模型标定，平均绝对百分比误差为 11.97%，比现有最佳拟合模型低 3.1–3.5 倍。',
         '/en/posts/daily/2026-11-04/': 'SIMPLE is a four-parameter formula for estimating energy used by large language models; across 13 models from six families on NVIDIA H100 GPUs, its average absolute percentage error was 11.97%, 3.1–3.5 times lower than the best existing fitted model, without tuning it for each model.',
+        '/posts/daily/2026-11-05/': '一项研究表明，数据中心只要把大语言模型查询在不同模型实例之间动态分配、不推迟任何请求，就能为电网提供可调的用电量；在一座 10,000 块 H100 GPU 数据中心的真实轨迹仿真中，可调幅度最高达总用电的 16%，约 10 秒内完成 90% 的目标降幅。',
+        '/en/posts/daily/2026-11-05/': 'Routing large language model queries across model instances, without deferring requests, lets a datacenter offer the grid adjustable power demand; in a trace-driven simulation of a 10,000-H100-GPU datacenter, flexibility reached up to 16% of total power use, with 90% of the reduction in about 10 seconds.',
+        '/posts/daily/2026-11-06/': '一项新基准让编程智能体自己设计专用的大语言模型服务系统，并以每美元 GPU 成本换来的、满足时延要求的 token 价值打分；Claude Sonnet 5.5 在 Gemma E4B 上做到每美元 2.97 美元，是 vLLM 参考实现的 4.87 倍。',
+        '/en/posts/daily/2026-11-06/': 'A new benchmark has coding agents design specialized large language model serving systems and scores them by latency-qualified token value per dollar of GPU cost; Claude Sonnet 5.5 reaches 2.97 dollars per dollar on Gemma E4B, 4.87 times the vLLM reference.',
+        '/posts/daily/2026-11-07/': '一项审计发现，发布前经过大量人工与语言模型辅助审查的编程智能体基准 Terminal-Bench 2.0，约 30% 存在问题；修复后的 Terminal-Bench 2.1 使准确率提高 10 个百分点以上，排行榜名次最多变动三位。',
+        '/en/posts/daily/2026-11-07/': 'An audit finds issues in roughly 30% of Terminal-Bench 2.0, a coding-agent benchmark that underwent extensive human and LM-assisted review before release; the repaired Terminal-Bench 2.1 raises accuracy by over 10 percentage points and moves leaderboard positions by up to three ranks.',
+        '/posts/daily/2026-11-08/': '一项关于大语言模型代码修复的预注册研究发现，运行时或 API 迁移后，在完整的修复空间上，用典型输入、要求全部断言通过的发布检查会放行 0.410 的错误修复；按版本说明写一条边界输入，就把这一比例降到 0.065。',
+        '/en/posts/daily/2026-11-08/': 'A preregistered study of LLM code repairs finds that after a runtime or API migration, a release gate requiring all assertions to pass on typical inputs lets through 0.410 of wrong repairs over the complete repair space, and that one edge input written from the release note cuts this to 0.065.',
+        '/posts/daily/2026-11-09/': '一个多模态电路板布线智能体在 247 块合成与真实电路板上测试，在 PCBWorld-Bench 四个测试子集上的干净通过率分别为 100%、94.9%、100% 和 40%，在三个真实电路板子集上比评测中最好的基线高 13.9、36 和 10 个百分点。',
+        '/en/posts/daily/2026-11-09/': 'A multimodal circuit-board routing agent tested on 247 synthetic and real-world boards achieves clean-pass rates of 100%, 94.9%, 100% and 40% on four PCBWorld-Bench test splits, and beats the best evaluated baseline on the three real-world subsets by 13.9, 36 and 10 percentage points.',
+        '/posts/daily/2026-11-10/': 'BitDecoding-FP4 让大语言模型的 KV 缓存直接以 4 位浮点格式解码，在 NVIDIA B300 上服务 Qwen3-4B 与 Qwen3-30B-A3B 时，峰值服务吞吐量是 BF16 KV 缓存的 2.4–3.0 倍，NVFP4 下准确率与 BF16 相差在 0.5 分以内。',
+        '/en/posts/daily/2026-11-10/': 'BitDecoding-FP4 lets large language models decode directly from a 4-bit floating-point KV cache; serving Qwen3-4B and Qwen3-30B-A3B on NVIDIA B300, it delivers 2.4–3.0 times higher peak serving throughput than a BF16 KV cache, while staying within 0.5 points of BF16 KV accuracy with NVFP4.',
+        '/posts/daily/2026-11-11/': '一项测试在 10 篇开放获取的心理学论文中埋入 100 处已知错误，再交给前沿模型和两款商用 AI 审稿工具审阅；最好的单个系统找出 71 处，最差的找出 30 处，把所有系统的结果合起来能找出 93 处。',
+        '/en/posts/daily/2026-11-11/': 'A test planted 100 known errors into 10 open-access psychology papers and ran them through frontier models and two commercial AI review tools; the best single system caught 71 of the errors, the worst caught 30, and pooling every system’s output caught 93.',
+        '/posts/daily/2026-11-12/': '一项以 DeepSeek-V4-Flash 为例的研究发现，模型更新后直接复用旧版本的 KV 缓存，可在三个前缀较长的问答基准上让首个 token 时延中位提速 2.10–5.08 倍，但缓存保留的是有用的任务信息，并不能忠实复现更新后模型的行为。',
+        '/en/posts/daily/2026-11-12/': 'A case study of DeepSeek-V4-Flash finds that directly reusing an old version’s KV cache after a model update gives median time-to-first-token speedups of 2.10–5.08 times on three longer-prefix QA benchmarks, but that the cache retains useful task information without faithfully reproducing the updated model’s behavior.',
         '/posts/daily/2026-11-13/': 'Sable 能证明一段大语言模型输出确实由一个已承诺的整数量化模型逐位算出；在一块 NVIDIA RTX PRO 6000 Blackwell GPU 上，它为 Qwen2.5-32B 的 4,096 个 token 出具全部 64 层的证明用时 92.5 秒，按公开 GPU 价格每个 4,096-token 请求的证明费用为 6.4 美分。',
         '/en/posts/daily/2026-11-13/': 'Sable can prove that a large language model’s output was computed, bit for bit, by a committed integer-quantized model; on one NVIDIA RTX PRO 6000 Blackwell GPU, it proves all 64 layers of Qwen2.5-32B for 4,096 tokens in 92.5 seconds, and a proof costs 6.4 cents per 4,096-token request at public GPU prices.',
     }
@@ -507,8 +525,8 @@ class ListSummaryRegression(_Built):
             rows = self.rows(lang_prefix + page)
             home = page == "index.html"
             for d in self.DATES:
-                # 首页 first 20。2026-11-04 起 10-13 不再出现在首页，仍在栏目索引。
-                if home and d == "2026-10-13":
+                # 首页 first 20：HOME_DROPPED_DATES 中的日期不再出现在首页，仍在栏目索引。
+                if home and d in self.HOME_DROPPED_DATES:
                     continue
                 path = "%sposts/daily/%s/index.html" % (lang_prefix, d)
                 s = rows.get(d)
@@ -532,8 +550,9 @@ class ListSummaryRegression(_Built):
         # #137 起列表改用手写 list_summary（去掉套话，不超过 320），不截成省略号；导语不改。
         for page in ("en/index.html", "en/posts/daily/index.html"):
             rows = self.rows(page)
-            # 2026-11-04 起首页 first 20 不再含 10-13；该日仍在栏目索引核对。
-            dates = ("2026-10-16",) if page == "en/index.html" else ("2026-10-13", "2026-10-16")
+            # 首页 first 20 不含 HOME_DROPPED_DATES；这些日期仍在栏目索引核对。
+            dates = tuple(d for d in ("2026-10-13", "2026-10-16")
+                          if not (page == "en/index.html" and d in self.HOME_DROPPED_DATES))
             for d in dates:
                 first = self.first_sentence(self.lede("en/posts/daily/%s/index.html" % d), False)
                 self.assertGreater(len(first), 320, d)
@@ -549,10 +568,9 @@ class ListSummaryRegression(_Built):
 
     def test_existing_pages_exact(self):
         # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
-        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-04 起 10-12 与 10-13、2026-11-13 起 10-14 不再出现在首页，仍在栏目索引里。
-        dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/",
-                        "/posts/daily/2026-10-13/", "/en/posts/daily/2026-10-13/",
-                        "/posts/daily/2026-10-14/", "/en/posts/daily/2026-10-14/")
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。HOME_DROPPED_DATES 中的日期不再出现在首页，仍在栏目索引里。
+        dropped_home = tuple(p % d for d in self.HOME_DROPPED_DATES
+                             for p in ("/posts/daily/%s/", "/en/posts/daily/%s/"))
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
