@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -501,6 +501,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-10/': 'BitDecoding-FP4 lets large language models decode directly from a 4-bit floating-point KV cache; serving Qwen3-4B and Qwen3-30B-A3B on NVIDIA B300, it delivers 2.4–3.0 times higher peak serving throughput than a BF16 KV cache, while staying within 0.5 points of BF16 KV accuracy with NVFP4.',
         '/posts/daily/2026-11-11/': '一项测试在 10 篇开放获取的心理学论文中埋入 100 处已知错误，再交给前沿模型和两款商用 AI 审稿工具审阅；最好的单个系统找出 71 处，最差的找出 30 处，把所有系统的结果合起来能找出 93 处。',
         '/en/posts/daily/2026-11-11/': 'A test planted 100 known errors into 10 open-access psychology papers and ran them through frontier models and two commercial AI review tools; the best single system caught 71 of the errors, the worst caught 30, and pooling every system’s output caught 93.',
+        '/posts/daily/2026-11-12/': '一项以 DeepSeek-V4-Flash 为例的研究发现，模型更新后直接复用旧版本的 KV 缓存，可在三个前缀较长的问答基准上让首个 token 时延中位提速 2.10–5.08 倍，但缓存保留的是有用的任务信息，并不能忠实复现更新后模型的行为。',
+        '/en/posts/daily/2026-11-12/': 'A case study of DeepSeek-V4-Flash finds that directly reusing an old version’s KV cache after a model update gives median time-to-first-token speedups of 2.10–5.08 times on three longer-prefix QA benchmarks, but that the cache retains useful task information without faithfully reproducing the updated model’s behavior.',
     }
 
     def lede(self, path):
