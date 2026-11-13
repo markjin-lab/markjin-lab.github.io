@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -491,6 +491,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-05/': 'Routing large language model queries across model instances, without deferring requests, lets a datacenter offer the grid adjustable power demand; in a trace-driven simulation of a 10,000-H100-GPU datacenter, flexibility reached up to 16% of total power use, with 90% of the reduction in about 10 seconds.',
         '/posts/daily/2026-11-06/': '一项新基准让编程智能体自己设计专用的大语言模型服务系统，并以每美元 GPU 成本换来的、满足时延要求的 token 价值打分；Claude Sonnet 5.5 在 Gemma E4B 上做到每美元 2.97 美元，是 vLLM 参考实现的 4.87 倍。',
         '/en/posts/daily/2026-11-06/': 'A new benchmark has coding agents design specialized large language model serving systems and scores them by latency-qualified token value per dollar of GPU cost; Claude Sonnet 5.5 reaches 2.97 dollars per dollar on Gemma E4B, 4.87 times the vLLM reference.',
+        '/posts/daily/2026-11-07/': '一项审计发现，发布前经过大量人工与语言模型辅助审查的编程智能体基准 Terminal-Bench 2.0，约 30% 存在问题；修复后的 Terminal-Bench 2.1 使准确率提高 10 个百分点以上，排行榜名次最多变动三位。',
+        '/en/posts/daily/2026-11-07/': 'An audit finds issues in roughly 30% of Terminal-Bench 2.0, a coding-agent benchmark that underwent extensive human and LM-assisted review before release; the repaired Terminal-Bench 2.1 raises accuracy by over 10 percentage points and moves leaderboard positions by up to three ranks.',
     }
 
     def lede(self, path):
