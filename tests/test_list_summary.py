@@ -485,6 +485,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-03/': 'On GLM-5.3-FLASH (QWEN-3.8-27B) at 10M tokens, D-LSA speeds up one attention layer by 22.7× (72.4×) in prefill and 4.6× (42.5×) in decode over its original sparse attention (full attention).',
         '/posts/daily/2026-11-04/': 'SIMPLE 是一条用四个参数估算大语言模型推理能耗的公式；在 NVIDIA H100 上测试六个家族的 13 个模型时，它无需逐模型标定，平均绝对百分比误差为 11.97%，比现有最佳拟合模型低 3.1–3.5 倍。',
         '/en/posts/daily/2026-11-04/': 'SIMPLE is a four-parameter formula for estimating energy used by large language models; across 13 models from six families on NVIDIA H100 GPUs, its average absolute percentage error was 11.97%, 3.1–3.5 times lower than the best existing fitted model, without tuning it for each model.',
+        '/posts/daily/2026-11-13/': 'Sable 能证明一段大语言模型输出确实由一个已承诺的整数量化模型逐位算出；在一块 NVIDIA RTX PRO 6000 Blackwell GPU 上，它为 Qwen2.5-32B 的 4,096 个 token 出具全部 64 层的证明用时 92.5 秒，按公开 GPU 价格每个 4,096-token 请求的证明费用为 6.4 美分。',
+        '/en/posts/daily/2026-11-13/': 'Sable can prove that a large language model’s output was computed, bit for bit, by a committed integer-quantized model; on one NVIDIA RTX PRO 6000 Blackwell GPU, it proves all 64 layers of Qwen2.5-32B for 4,096 tokens in 92.5 seconds, and a proof costs 6.4 cents per 4,096-token request at public GPU prices.',
     }
 
     def lede(self, path):
@@ -547,9 +549,10 @@ class ListSummaryRegression(_Built):
 
     def test_existing_pages_exact(self):
         # 6 个列表页（中英首页、posts、posts/daily）里出现的每期摘要都与 EXISTING 逐字相同，且没有 EXISTING 之外的行。
-        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-04 起 10-12 与 10-13 不再出现在首页，仍在栏目索引里。
+        # 首页只列最新 20 篇（layouts/index.html 的 first 20）。2026-11-04 起 10-12 与 10-13、2026-11-13 起 10-14 不再出现在首页，仍在栏目索引里。
         dropped_home = ("/posts/daily/2026-10-12/", "/en/posts/daily/2026-10-12/",
-                        "/posts/daily/2026-10-13/", "/en/posts/daily/2026-10-13/")
+                        "/posts/daily/2026-10-13/", "/en/posts/daily/2026-10-13/",
+                        "/posts/daily/2026-10-14/", "/en/posts/daily/2026-10-14/")
         for page in ("index.html", "posts/index.html", "posts/daily/index.html",
                      "en/index.html", "en/posts/index.html", "en/posts/daily/index.html"):
             s = (self.out / page).read_text(encoding="utf-8")
