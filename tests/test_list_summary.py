@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -489,6 +489,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-04/': 'SIMPLE is a four-parameter formula for estimating energy used by large language models; across 13 models from six families on NVIDIA H100 GPUs, its average absolute percentage error was 11.97%, 3.1–3.5 times lower than the best existing fitted model, without tuning it for each model.',
         '/posts/daily/2026-11-05/': '一项研究表明，数据中心只要把大语言模型查询在不同模型实例之间动态分配、不推迟任何请求，就能为电网提供可调的用电量；在一座 10,000 块 H100 GPU 数据中心的真实轨迹仿真中，可调幅度最高达总用电的 16%，约 10 秒内完成 90% 的目标降幅。',
         '/en/posts/daily/2026-11-05/': 'Routing large language model queries across model instances, without deferring requests, lets a datacenter offer the grid adjustable power demand; in a trace-driven simulation of a 10,000-H100-GPU datacenter, flexibility reached up to 16% of total power use, with 90% of the reduction in about 10 seconds.',
+        '/posts/daily/2026-11-06/': '一项新基准让编程智能体自己设计专用的大语言模型服务系统，并以每美元 GPU 成本换来的、满足时延要求的 token 价值打分；Claude Sonnet 5.5 在 Gemma E4B 上做到每美元 2.97 美元，是 vLLM 参考实现的 4.87 倍。',
+        '/en/posts/daily/2026-11-06/': 'A new benchmark has coding agents design specialized large language model serving systems and scores them by latency-qualified token value per dollar of GPU cost; Claude Sonnet 5.5 reaches 2.97 dollars per dollar on Gemma E4B, 4.87 times the vLLM reference.',
     }
 
     def lede(self, path):
