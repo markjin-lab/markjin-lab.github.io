@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -503,6 +503,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-11/': 'A test planted 100 known errors into 10 open-access psychology papers and ran them through frontier models and two commercial AI review tools; the best single system caught 71 of the errors, the worst caught 30, and pooling every system’s output caught 93.',
         '/posts/daily/2026-11-12/': '一项以 DeepSeek-V4-Flash 为例的研究发现，模型更新后直接复用旧版本的 KV 缓存，可在三个前缀较长的问答基准上让首个 token 时延中位提速 2.10–5.08 倍，但缓存保留的是有用的任务信息，并不能忠实复现更新后模型的行为。',
         '/en/posts/daily/2026-11-12/': 'A case study of DeepSeek-V4-Flash finds that directly reusing an old version’s KV cache after a model update gives median time-to-first-token speedups of 2.10–5.08 times on three longer-prefix QA benchmarks, but that the cache retains useful task information without faithfully reproducing the updated model’s behavior.',
+        '/posts/daily/2026-11-13/': 'Sable 能证明一段大语言模型输出确实由一个已承诺的整数量化模型逐位算出；在一块 NVIDIA RTX PRO 6000 Blackwell GPU 上，它为 Qwen2.5-32B 的 4,096 个 token 出具全部 64 层的证明用时 92.5 秒，按公开 GPU 价格每个 4,096-token 请求的证明费用为 6.4 美分。',
+        '/en/posts/daily/2026-11-13/': 'Sable can prove that a large language model’s output was computed, bit for bit, by a committed integer-quantized model; on one NVIDIA RTX PRO 6000 Blackwell GPU, it proves all 64 layers of Qwen2.5-32B for 4,096 tokens in 92.5 seconds, and a proof costs 6.4 cents per 4,096-token request at public GPU prices.',
     }
 
     def lede(self, path):
