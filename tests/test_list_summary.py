@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -509,6 +509,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-12/': 'A case study of DeepSeek-V4-Flash finds that directly reusing an old version’s KV cache after a model update gives median time-to-first-token speedups of 2.10–5.08 times on three longer-prefix QA benchmarks, but that the cache retains useful task information without faithfully reproducing the updated model’s behavior.',
         '/posts/daily/2026-11-13/': 'Sable 能证明一段大语言模型输出确实由一个已承诺的整数量化模型逐位算出；在一块 NVIDIA RTX PRO 6000 Blackwell GPU 上，它为 Qwen2.5-32B 的 4,096 个 token 出具全部 64 层的证明用时 92.5 秒，按公开 GPU 价格每个 4,096-token 请求的证明费用为 6.4 美分。',
         '/en/posts/daily/2026-11-13/': 'Sable can prove that a large language model’s output was computed, bit for bit, by a committed integer-quantized model; on one NVIDIA RTX PRO 6000 Blackwell GPU, it proves all 64 layers of Qwen2.5-32B for 4,096 tokens in 92.5 seconds, and a proof costs 6.4 cents per 4,096-token request at public GPU prices.',
+        '/posts/daily/2026-11-14/': 'CapLite 在读取工具结果前固定计划中的写操作，并核对收件人、金额等参数值是否由用户请求明确给出；在 AgentDojo 仿真平台主攻击测试的 15 个模型、共 13,935 个需工具调用的回合中，成功攻击数为零。',
+        '/en/posts/daily/2026-11-14/': 'CapLite fixes its planned writes before reading tool results; in AgentDojo’s simulated benchmark under the main attack it records zero successful attacks across 13,935 tool-goal episodes on 15 models.',
     }
 
     def lede(self, path):
