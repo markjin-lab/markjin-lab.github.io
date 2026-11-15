@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -513,6 +513,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-14/': 'CapLite fixes its planned writes before reading tool results; in AgentDojo’s simulated benchmark under the main attack it records zero successful attacks across 13,935 tool-goal episodes on 15 models.',
         '/posts/daily/2026-11-15/': '本期整理三条研究线索：看图模型的视觉部分如何安排、用户适应模型后该怎样比较成绩，以及任务交给其他智能体时该检查哪些环节。',
         '/en/posts/daily/2026-11-15/': 'This issue presents three research leads: how to arrange the visual components of a model, how to compare models when users adapt, and what to examine when agents delegate tasks.',
+        '/posts/daily/2026-11-16/': '本期三条研究线索围绕一个阅读问题展开：怎样把想了解的模型行为，变成可核对的评测问题。',
+        '/en/posts/daily/2026-11-16/': 'Three research leads in this issue ask how to turn questions about model behavior into checkable evaluation questions.',
     }
 
     def lede(self, path):
