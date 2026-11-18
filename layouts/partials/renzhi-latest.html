@@ -1,0 +1,27 @@
+{{- $date := "" -}}
+{{- with .Site.Data.renzhi -}}
+  {{- with .latest -}}
+    {{- if and (reflect.IsMap .) (eq (len .) 1) -}}
+      {{- $date = index . "date" | default "" -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $datePattern := `^([0-9]{4}-(0[1-9]|1[0-2]))-(0[1-9]|[12][0-9]|3[01])$` -}}
+{{- $valid := false -}}
+{{- if eq (printf "%T" $date) "string" -}}
+  {{- range findRESubmatch $datePattern $date -}}
+    {{- $monthStart := time (printf "%s-01" (index . 1)) -}}
+    {{- $valid = and (ne ($monthStart.Format "2006") "0000") (le (index . 3) (($monthStart.AddDate 0 1 -1).Format "02")) -}}
+  {{- end -}}
+{{- end -}}
+{{- if $valid -}}
+  {{- $url := printf "/tests/video-delivery-%s/" (replace $date "-" "") -}}
+  {{- $page := printf "static%sindex.html" $url -}}
+  {{- if and (fileExists $page) (not (os.Stat $page).IsDir) -}}
+    <p><a href="{{ $url }}">{{ i18n "renzhi_latest" }}</a> <time class="meta" datetime="{{ $date }}">{{ $date }}</time></p>
+  {{- else -}}
+    {{- warnf "renzhi latest: missing playback file %s" $page -}}
+  {{- end -}}
+{{- else -}}
+  {{- warnf "renzhi latest: missing or invalid date in data/renzhi/latest.json" -}}
+{{- end -}}
