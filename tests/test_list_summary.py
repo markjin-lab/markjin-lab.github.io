@@ -433,7 +433,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -519,6 +519,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-17/': 'Three research leads in this issue concern indexing screen history, retaining execution information for long tasks, and organizing requests in a local inference server.',
         '/posts/daily/2026-11-18/': '本期三条研究线索关注工具提供者的身份、智能体之间的指令传播，以及记忆错误从哪里开始。',
         '/en/posts/daily/2026-11-18/': 'Three research leads in this issue concern tool-provider identity, instruction propagation between agents, and the origins of memory errors.',
+        '/posts/daily/2026-11-19/': '本期三条研究线索从代码合并、核验范围和文档维护切入，讨论怎样确认 AI 辅助工作做到了哪一步。',
+        '/en/posts/daily/2026-11-19/': 'Three research leads in this issue look at how to check what AI-assisted work has achieved, through code merges, the scope of verification, and documentation maintenance.',
     }
 
     def lede(self, path):
