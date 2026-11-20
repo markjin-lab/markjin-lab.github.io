@@ -1,0 +1,8 @@
+{{- $valid := false -}}
+{{- if eq (printf "%T" .) "string" -}}
+  {{- range findRESubmatch `^([0-9]{4}-(0[1-9]|1[0-2]))-(0[1-9]|[12][0-9]|3[01])$` . -}}
+    {{- $month := time (printf "%s-01" (index . 1)) -}}
+    {{- $valid = and (ne ($month.Format "2006") "0000") (le (index . 3) (($month.AddDate 0 1 -1).Format "02")) -}}
+  {{- end -}}
+{{- end -}}
+{{- return $valid -}}
