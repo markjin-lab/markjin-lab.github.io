@@ -440,7 +440,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -530,6 +530,8 @@ class ListSummaryRegression(_Built):
         '/en/posts/daily/2026-11-19/': 'Three research leads in this issue look at how to check what AI-assisted work has achieved, through code merges, the scope of verification, and documentation maintenance.',
         '/posts/daily/2026-11-20/': '本期三条研究线索关注怎样检验模拟用户、怎样给推理请求排队，以及怎样用程序判断搜索结果是否相关。',
         '/en/posts/daily/2026-11-20/': 'Three research leads in this issue examine how to assess simulated users, queue inference requests, and judge search relevance with executable programs.',
+        '/posts/daily/2026-11-21/': '本期三条研究线索关注客户预测能看到多长的历史、新闻搜索会返回哪些来源，以及金属增材制造怎样估计零件变形。',
+        '/en/posts/daily/2026-11-21/': 'Three research leads in this issue examine how much history customer forecasts can use, which sources news searches return, and how to estimate part distortion in metal additive manufacturing.',
     }
 
     def lede(self, path):
