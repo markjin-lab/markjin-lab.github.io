@@ -1,0 +1,35 @@
+{{ define "main" }}
+<h1>{{ .Title }}</h1>
+{{ $videos := slice }}
+{{ with partialCached "renzhi-current.html" . .Language.Lang }}
+  {{ $latest := .date }}
+  {{ range sort (readDir "static/tests") "Name" "desc" }}
+    {{ if .IsDir }}
+      {{ range findRESubmatch `^video-delivery-([0-9]{4})([0-9]{2})([0-9]{2})$` .Name }}
+        {{ $date := printf "%s-%s-%s" (index . 1) (index . 2) (index . 3) }}
+        {{ if and (lt $date $latest) (partial "renzhi-valid-date.html" $date) }}
+          {{ $stamp := replace $date "-" "" }}
+          {{ $url := printf "/tests/video-delivery-%s/" $stamp }}
+          {{ $file := printf "static%sindex.html" $url }}
+          {{ if and (fileExists $file) (not (os.Stat $file).IsDir) }}
+            {{/* Published entries use the date-specific named Release on this site's repository. */}}
+            {{ $prefix := printf "renzhi-%s(?:-[a-z0-9]+)*" $stamp }}
+            {{ $source := printf `<source\s+(?:[^>]*\s)?src="https://github\.com/markjin-lab/markjin-lab\.github\.io/releases/download/%s/%s\.mp4"` $prefix $prefix }}
+            {{ if findRE $source (readFile $file) }}
+              {{ $videos = $videos | append (dict "date" $date "url" $url) }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{ with $videos }}
+  {{ if eq $.Language.Lang "en" }}<p>{{ i18n "renzhi_archive_language" }}</p>{{ end }}
+  <ul class="post-list">
+    {{ range . }}<li><a href="{{ .url }}"><time datetime="{{ .date }}">{{ .date }}</time></a></li>{{ end }}
+  </ul>
+{{ else }}
+  <p>{{ i18n "renzhi_archive_empty" }}</p>
+{{ end }}
+{{ end }}
