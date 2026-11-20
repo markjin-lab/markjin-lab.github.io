@@ -1,5 +1,6 @@
 {{ define "main" }}
-<h1>{{ .Title }}</h1>
+<div class="collection-shell">
+<div class="collection-header"><h1>{{ .Title }}</h1></div>
 {{ $videos := slice }}
 {{ with partialCached "renzhi-current.html" . .Language.Lang }}
   {{ $latest := .date }}
@@ -15,8 +16,12 @@
             {{/* Published entries use the date-specific named Release on this site's repository. */}}
             {{ $prefix := printf "renzhi-%s(?:-[a-z0-9]+)*" $stamp }}
             {{ $source := printf `<source\s+(?:[^>]*\s)?src="https://github\.com/markjin-lab/markjin-lab\.github\.io/releases/download/%s/%s\.mp4"` $prefix $prefix }}
-            {{ if findRE $source (readFile $file) }}
-              {{ $videos = $videos | append (dict "date" $date "url" $url) }}
+            {{ $html := readFile $file }}
+            {{ if findRE $source $html }}
+              {{ $poster := "" }}
+              {{ $posterPattern := printf `<video\s+(?:[^>]*\s)?poster="(https://github\.com/markjin-lab/markjin-lab\.github\.io/releases/download/%s/%s-poster\.(?:png|jpg|webp))"` $prefix $prefix }}
+              {{ range findRESubmatch $posterPattern $html 1 }}{{ $poster = index . 1 }}{{ end }}
+              {{ $videos = $videos | append (dict "date" $date "url" $url "poster" $poster) }}
             {{ end }}
           {{ end }}
         {{ end }}
@@ -26,10 +31,17 @@
 {{ end }}
 {{ with $videos }}
   {{ if eq $.Language.Lang "en" }}<p>{{ i18n "renzhi_archive_language" }}</p>{{ end }}
-  <ul class="post-list">
-    {{ range . }}<li><a href="{{ .url }}"><time datetime="{{ .date }}">{{ .date }}</time></a></li>{{ end }}
+  <ul class="post-list video-archive">
+    {{ range . }}
+      <li><a href="{{ .url }}">
+        {{ with .poster }}<img src="{{ . }}" alt="" width="56" height="72" loading="lazy">{{ end }}
+        <time datetime="{{ .date }}">{{ .date }}</time><span class="video-row-arrow" aria-hidden="true">→</span>
+      </a></li>
+    {{ end }}
   </ul>
 {{ else }}
   <p>{{ i18n "renzhi_archive_empty" }}</p>
 {{ end }}
+<p><a href="{{ "/" | relLangURL }}#video-heading">← {{ i18n "editorial_watch" }}</a></p>
+</div>
 {{ end }}

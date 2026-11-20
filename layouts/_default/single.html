@@ -1,4 +1,7 @@
-{{ define "main" }}{{ $isDaily := and (eq .Section "posts") (eq .File.Dir "posts/daily/") }}<article><h1>{{ .Title }}</h1>{{ if not .Date.IsZero }}<p class="meta">{{ .Date.Format "2006-01-02" }}{{ if $isDaily }} · <a href="#comments" style="text-decoration:underline;text-underline-offset:.15em">{{ i18n "comments_jump" }}</a>{{ end }}</p>{{ end }}{{ partial "superseded-corrections.html" . | safeHTML }}</article>
+{{ define "main" }}{{ $isDaily := and (eq .Section "posts") (eq .File.Dir "posts/daily/") }}{{ if or $isDaily (eq .Section "topics") }}<div class="article-tools">
+{{ if $isDaily }}<a href="{{ "/posts/daily/" | relLangURL }}">← {{ i18n "editorial_daily_archive" }}</a>{{ else }}<a href="{{ "/topics/" | relLangURL }}">← {{ i18n "editorial_topics" }}</a>{{ end }}
+{{ if strings.Contains .TableOfContents "<li>" }}<details><summary>{{ i18n "editorial_contents" }}</summary>{{ .TableOfContents }}</details>{{ end }}
+</div>{{ end }}<article><h1>{{ .Title }}</h1>{{ if not .Date.IsZero }}<p class="meta">{{ .Date.Format "2006-01-02" }}{{ if $isDaily }} · <a href="#comments" style="text-decoration:underline;text-underline-offset:.15em">{{ i18n "comments_jump" }}</a>{{ end }}</p>{{ end }}{{ partial "superseded-corrections.html" . | safeHTML }}</article>
 {{ if eq .Section "posts" }}<section class="comments"{{ if $isDaily }} id="comments"{{ end }} style="margin-top:2.5rem">
 {{ if $isDaily }}<h2>{{ i18n "comments_heading" }}</h2>
 <p>{{ i18n "comments_invite" }}</p>{{ end }}

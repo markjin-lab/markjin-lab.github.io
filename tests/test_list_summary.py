@@ -527,7 +527,7 @@ class ListSummaryRegression(_Built):
 
     def lede(self, path):
         s = (self.out / path).read_text(encoding="utf-8")
-        p = re.search(r"<main>.*?<p>(.*?)</p>", s, re.S).group(1)
+        p = re.search(r"<article\b[^>]*>.*?<p>(.*?)</p>", s, re.S).group(1)
         p = re.sub(r"<[^>]+>", "", p)
         p = html.unescape(p)
         p = re.sub(r"\s+", " ", p).strip()

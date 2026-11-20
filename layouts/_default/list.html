@@ -1,1 +1,14 @@
-{{ define "main" }}<h1>{{ .Title }}</h1>{{ .Content }}<ul class="post-list">{{ $pages := .RegularPagesRecursive }}{{ range $pages.ByDate.Reverse }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a>{{ $d := .Date.Format "2006-01-02" }}{{ if and (not .Date.IsZero) (not (strings.Contains .Title $d)) }} <span class="meta">{{ $d }}</span>{{ end }}{{ if eq .Kind "page" }}{{ with partial "page-description.html" (dict "page" . "fallback" false "strip" true) }}<p class="summary">{{ . }}</p>{{ end }}{{ end }}</li>{{ end }}</ul>{{ end }}
+{{ define "main" }}
+<div class="collection-shell">
+  <div class="collection-header"><h1>{{ .Title }}</h1>{{ .Content }}</div>
+  {{ if eq .Path "/posts/daily" }}
+    <div class="archive-filter" hidden>
+      <label for="archive-query">{{ i18n "editorial_filter" }}</label>
+      <input type="search" id="archive-query" placeholder="{{ i18n "editorial_filter_placeholder" }}" aria-controls="archive-entries">
+      <p id="archive-empty" role="status" hidden>{{ i18n "editorial_filter_empty" }}</p>
+    </div>
+    <script src="{{ "js/archive-filter.js" | relURL }}" defer></script>
+  {{ end }}
+  <ul class="post-list" id="archive-entries">{{ range .RegularPagesRecursive.ByDate.Reverse }}{{ partial "editorial-post-row.html" . }}{{ end }}</ul>
+</div>
+{{ end }}

@@ -1,3 +1,3 @@
 {{- with partialCached "renzhi-current.html" . .Language.Lang -}}
-  <p><a href="{{ .url }}">{{ i18n "renzhi_latest" }}</a> <time class="meta" datetime="{{ .date }}">{{ .date }}</time> · <a href="{{ "/renzhi/archive/" | relLangURL }}">{{ i18n "renzhi_archive" }}</a></p>
+  <p class="video-links"><a class="video-primary" href="{{ .url }}"><span class="video-mark" aria-hidden="true"><span>▶</span></span>{{ i18n "renzhi_latest" }}</a> <time class="meta" datetime="{{ .date }}">{{ .date }}</time> · <a href="{{ "/renzhi/archive/" | relLangURL }}">{{ i18n "renzhi_archive" }}</a></p>
 {{- end -}}
