@@ -287,7 +287,14 @@ class ListSummaryEdgeCases(_Built):
     def test_en_home(self):
         # 首页只列最新 20 篇：首页出现的每一行都要和列表里同一页的显示一致
         home, lst = self.rows("en/index.html"), self.rows("en/posts/daily/index.html")
-        self.assertEqual(len(home), 20)
+        self.assertEqual(len(home), 19)
+        source = (self.out / "en/index.html").read_text(encoding="utf-8")
+        hero = source.split('class="lead-card"', 1)[1].split("</section>", 1)[0]
+        href = re.search(r'<h2><a href="([^"]+)"', hero).group(1)
+        slug = href.strip("/").split("/")[-1]
+        summary = re.search(r'<p class="lead-summary">(.*?)</p>', hero, re.S)
+        self.assertNotIn(slug, home)
+        self.assertEqual(html.unescape(summary.group(1)) if summary else None, lst[slug])
         for slug, s in home.items():
             self.assertEqual(s, lst[slug], slug)
 
@@ -527,7 +534,7 @@ class ListSummaryRegression(_Built):
 
     def lede(self, path):
         s = (self.out / path).read_text(encoding="utf-8")
-        p = re.search(r"<main>.*?<p>(.*?)</p>", s, re.S).group(1)
+        p = re.search(r"<article\b[^>]*>.*?<p>(.*?)</p>", s, re.S).group(1)
         p = re.sub(r"<[^>]+>", "", p)
         p = html.unescape(p)
         p = re.sub(r"\s+", " ", p).strip()
@@ -597,6 +604,12 @@ class ListSummaryRegression(_Built):
             home = page in ("index.html", "en/index.html")
             want = {h: v for h, v in self.EXISTING.items()
                     if h.startswith("/en/") == en and not (home and h in dropped_home)}
+            if home:
+                hero = s.split('class="lead-card"', 1)[1].split("</section>", 1)[0]
+                href = re.search(r'<h2><a href="([^"]+)"', hero).group(1)
+                summary = re.search(r'<p class="lead-summary">(.*?)</p>', hero, re.S)
+                self.assertNotIn(href, rows, page)
+                rows[href] = html.unescape(summary.group(1)) if summary else None
             self.assertEqual(rows, want, page)
         # 10-19 起：列表摘要等于渲染后导语第一句（只去句末出处编号，含套话，大小写不改）。
         # 10-12～10-18（#137）：手写摘要去掉套话，是该首句的逐字子串；导语首句仍含套话。
