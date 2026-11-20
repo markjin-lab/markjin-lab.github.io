@@ -6,11 +6,13 @@
 {{ $posts := where .Site.RegularPages "Section" "posts" }}
 {{ $daily := where $posts "File.Dir" "posts/daily/" }}
 {{ if not $daily }}{{ $daily = $posts }}{{ end }}
+{{ $lead := index $daily 0 }}
 <div class="edition-grid">
   <section class="lead-card">
     <span class="eyebrow">{{ i18n "editorial_latest_daily" }}</span>
-    {{ with index $daily 0 }}
-      {{ if not .Date.IsZero }}<time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>{{ end }}
+    {{ with $lead }}
+      {{ $date := .Date.Format "2006-01-02" }}
+      {{ if and (not .Date.IsZero) (not (strings.Contains .Title $date)) }}<time datetime="{{ $date }}">{{ $date }}</time>{{ end }}
       <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
       {{ with partial "page-description.html" (dict "page" . "fallback" false "strip" true) }}<p class="lead-summary">{{ . }}</p>{{ end }}
       <div class="actions">
@@ -29,10 +31,10 @@
   {{ end }}
 </div>
 <div class="section-heading">
-  <h2>{{ i18n "latest" }}</h2>
+  <h2>{{ i18n "editorial_recent_daily" }}</h2>
   <a class="action" href="{{ "/posts/daily/" | relLangURL }}">{{ i18n "editorial_daily_archive" }} <span aria-hidden="true">&nbsp;→</span></a>
 </div>
-<ul class="post-list home-list">{{ range first 20 $posts }}{{ partial "editorial-post-row.html" . }}{{ end }}</ul>
+<ul class="post-list home-list">{{ range first 19 (complement (slice $lead) $daily) }}{{ partial "editorial-post-row.html" . }}{{ end }}</ul>
 <div class="section-heading"><h2>{{ i18n "editorial_explore" }}</h2></div>
 <div class="section-links">
   <a href="{{ "/topics/" | relLangURL }}">{{ i18n "editorial_topics" }} <span aria-hidden="true">→</span></a>

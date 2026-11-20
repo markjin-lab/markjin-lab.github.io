@@ -35,7 +35,7 @@
     {{ range . }}
       <li><a href="{{ .url }}">
         {{ with .poster }}<img src="{{ . }}" alt="" width="56" height="72" loading="lazy">{{ end }}
-        <time datetime="{{ .date }}">{{ .date }}</time><span class="video-row-arrow" aria-hidden="true">→</span>
+        <time datetime="{{ .date }}">{{ .date }}</time> <span class="video-row-arrow">{{ i18n "editorial_watch_action" }} <span aria-hidden="true">→</span></span>
       </a></li>
     {{ end }}
   </ul>

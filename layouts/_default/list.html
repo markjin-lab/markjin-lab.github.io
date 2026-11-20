@@ -1,6 +1,6 @@
 {{ define "main" }}
 <div class="collection-shell">
-  <div class="collection-header"><h1>{{ .Title }}</h1>{{ .Content }}</div>
+  <div class="collection-header"><h1>{{ if eq .Path "/posts/daily" }}{{ i18n "editorial_daily_archive" }}{{ else }}{{ .Title }}{{ end }}</h1>{{ .Content }}</div>
   {{ if eq .Path "/posts/daily" }}
     <div class="archive-filter" hidden>
       <label for="archive-query">{{ i18n "editorial_filter" }}</label>
