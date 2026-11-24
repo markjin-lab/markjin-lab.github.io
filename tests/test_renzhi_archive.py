@@ -82,3 +82,22 @@ class RenzhiArchiveTests(unittest.TestCase):
                 for prefix in ("", "en/"):
                     archive = (out / f"{prefix}renzhi/archive/index.html").read_text()
                     self.assertNotIn("/tests/video-delivery-", archive)
+
+    def test_published_video_pages_have_comments_below_the_player(self):
+        root = Path(__file__).resolve().parents[1] / "static"
+        loader = "/js/renzhi-comments.js"
+        self.assertTrue((root / loader.lstrip("/")).is_file())
+        pages = [
+            page for page in (root / "tests").glob("video-delivery-*/index.html")
+            if re.fullmatch(r"video-delivery-\d{8}", page.parent.name)
+        ]
+        self.assertTrue(pages)
+        for page in pages:
+            with self.subTest(episode=page.parent.name):
+                html = page.read_text(encoding="utf-8")
+                section = re.search(r'<section id="comments"[^>]*>.*?</section>', html, re.S)
+                self.assertIsNotNone(section)
+                self.assertGreaterEqual(html.find("</video>"), 0)
+                self.assertGreater(section.start(), html.find("</video>"))
+                self.assertIn(f'src="{loader}"', section.group())
+                self.assertEqual(html.count(f'src="{loader}"'), 1)
