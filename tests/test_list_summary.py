@@ -440,7 +440,7 @@ class ListSummaryRegression(_Built):
     WITH_DATA = True
     DATES = ("2026-10-13", "2026-10-16", "2026-10-17", "2026-10-18")
     # 首页只列最新 20 篇：已移出首页（仍在栏目索引）的日期，每新增一期顺延一天。
-    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06")
+    HOME_DROPPED_DATES = ("2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30", "2026-10-31", "2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-07")
     # #137：这 14 条列表摘要去掉套话，是导语首句的子串；其余各期仍与导语首句逐字相同。
     PREFIX_STRIPPED = {
         "/%sposts/daily/2026-10-%02d/" % (lang, day)
@@ -536,12 +536,14 @@ class ListSummaryRegression(_Built):
         '/posts/daily/2026-11-24/': '本期三条研究线索关注怎样缩短超参数搜索、怎样检验 Transformer 层间的协作，以及蜂箱温度能否提前识别蜂群衰亡。',
         '/posts/daily/2026-11-25/': '本期三条研究线索关注模型能否察觉自己的推理错误、洪水模拟的平均误差与概率质量，以及电视字幕怎样找回低音量对白。',
         '/posts/daily/2026-11-26/': '本期三项研究关注芯片设计怎样验收、视觉模型修错后怎样复测，以及聊天答案的呈现方式怎样影响投票。',
+        '/posts/daily/2026-11-27/': '本期三项研究分别检验模型怎样用时间戳对齐事件、生成配图怎样影响看图答题，以及哪些代码改动是通过任务测试所需的。',
         '/en/posts/daily/2026-11-21/': 'Three research leads in this issue examine how much history customer forecasts can use, which sources news searches return, and how to estimate part distortion in metal additive manufacturing.',
         '/en/posts/daily/2026-11-22/': 'Three research leads in this issue examine where robot actions fail, how language models turn internal information into answers, and how to check outputs from ocean engineering simulations.',
         '/en/posts/daily/2026-11-23/': 'Three research leads examine how model serving can free GPU memory, how fibre calibration can use a few real measurements, and how simulated home energy savings hold up in practice.',
         '/en/posts/daily/2026-11-24/': 'Three research leads examine how to shorten hyperparameter searches, how to test cooperation between Transformer layers, and whether hive temperature can warn of colony collapse.',
         '/en/posts/daily/2026-11-25/': 'Three research leads examine whether models notice their own reasoning errors, how flood forecasts represent uncertainty, and how television captioning catches quiet speech.',
         '/en/posts/daily/2026-11-26/': 'Three studies examine how to test chip designs, retest vision models after a repair, and measure how chatbot answer delivery affects votes.',
+        '/en/posts/daily/2026-11-27/': 'Three studies examine how models use timestamps to align events, how generated images affect visual answers, and which code edits are needed to pass task tests.',
     }
 
     def lede(self, path):
